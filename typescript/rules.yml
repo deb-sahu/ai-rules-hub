@@ -1,0 +1,112 @@
+version: "1.0.0"
+language: "TypeScript"
+target: "ES2020+"
+
+naming_conventions:
+  classes:
+    - rule: "Use PascalCase for class names"
+      example: "class UserService { }"
+  interfaces:
+    - rule: "Use PascalCase for interface names (no 'I' prefix)"
+      example: "interface User { }"
+  types:
+    - rule: "Use PascalCase for type aliases"
+      example: "type UserRole = 'admin' | 'user';"
+  functions:
+    - rule: "Use camelCase for function names"
+      example: "function getUserById(id: number) { }"
+  variables:
+    - rule: "Use camelCase for variables"
+      example: "const userName = 'John';"
+  constants:
+    - rule: "Use UPPER_SNAKE_CASE for constants"
+      example: "const MAX_RETRIES = 3;"
+  enums:
+    - rule: "Use PascalCase for enum names and members"
+      example: "enum UserStatus { Active, Inactive }"
+
+code_organization:
+  file_structure:
+    - "One main export per file"
+    - "Group related types and interfaces"
+    - "Use index files for clean exports"
+  imports:
+    - "Use absolute imports with path aliases"
+    - "Group imports: external, internal, types"
+    - "Remove unused imports"
+  module_structure:
+    - "Interfaces and types at the top"
+    - "Constants after types"
+    - "Functions and classes after constants"
+    - "Default export at the bottom"
+
+best_practices:
+  type_safety:
+    - "Always use explicit types for function parameters and return values"
+    - "Avoid 'any' type - use 'unknown' if needed"
+    - "Use strict mode in tsconfig.json"
+    - "Leverage union types and discriminated unions"
+  async_await:
+    - "Use async/await over raw Promises"
+    - "Handle promise rejections properly"
+    - "Use Promise.all() for parallel operations"
+  error_handling:
+    - "Use custom error classes"
+    - "Always type catch blocks as unknown"
+    - "Provide meaningful error messages"
+  immutability:
+    - "Prefer const over let"
+    - "Never use var"
+    - "Use readonly for object properties when applicable"
+    - "Use as const for literal types"
+  functions:
+    - "Use arrow functions for callbacks"
+    - "Use function declarations for named functions"
+    - "Keep functions small and focused"
+    - "Use default parameters instead of conditionals"
+
+typescript_specific:
+  generics:
+    - "Use meaningful generic names (T, K, V for simple cases)"
+    - "Constrain generics when possible"
+    - "Use generic utilities (Partial, Pick, Omit, etc.)"
+  utility_types:
+    - "Partial<T> for optional properties"
+    - "Required<T> for required properties"
+    - "Pick<T, K> to select properties"
+    - "Omit<T, K> to exclude properties"
+    - "Record<K, T> for key-value objects"
+  type_guards:
+    - "Use type guards for runtime type checking"
+    - "Create custom type guard functions"
+    - "Use 'in' operator for property checks"
+  decorators:
+    - "Use decorators judiciously"
+    - "Enable experimentalDecorators in tsconfig"
+
+security:
+  - "Validate and sanitize all user inputs"
+  - "Use environment variables for sensitive data"
+  - "Avoid eval() and Function constructor"
+  - "Use proper CORS configuration"
+  - "Implement rate limiting for APIs"
+
+performance:
+  - "Use lazy loading for large modules"
+  - "Implement memoization for expensive operations"
+  - "Use web workers for CPU-intensive tasks"
+  - "Optimize bundle size with tree shaking"
+  - "Use async imports for code splitting"
+
+testing:
+  - "Write tests using Jest or Vitest"
+  - "Use describe/it for test structure"
+  - "Mock external dependencies"
+  - "Test edge cases and error scenarios"
+  - "Aim for high code coverage"
+
+documentation:
+  - "Use JSDoc comments for public APIs"
+  - "Document complex type definitions"
+  - "Keep inline comments minimal and meaningful"
+  - "Use clear, self-documenting names"

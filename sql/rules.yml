@@ -1,0 +1,107 @@
+version: "1.0.0"
+language: "SQL"
+database_systems: ["PostgreSQL", "MySQL", "SQL Server", "Oracle"]
+
+naming_conventions:
+  tables:
+    - rule: "Use snake_case for table names"
+      example: "user_accounts, order_items"
+    - rule: "Use plural nouns for table names"
+      example: "users, orders, products"
+  columns:
+    - rule: "Use snake_case for column names"
+      example: "user_id, created_at, first_name"
+  primary_keys:
+    - rule: "Name primary keys as 'id' or '{table}_id'"
+      example: "id, user_id"
+  foreign_keys:
+    - rule: "Name foreign keys as '{referenced_table}_id'"
+      example: "user_id, order_id"
+  indexes:
+    - rule: "Name as 'idx_{table}_{columns}'"
+      example: "idx_users_email, idx_orders_user_id_created_at"
+  constraints:
+    - rule: "Use descriptive names with prefixes"
+      example: "pk_users_id, fk_orders_user_id, ck_users_age_positive"
+
+schema_design:
+  normalization:
+    - "Follow Third Normal Form (3NF) for most cases"
+    - "Denormalize judiciously for performance"
+    - "Document denormalization decisions"
+  data_types:
+    - "Use appropriate data types for columns"
+    - "Use VARCHAR with specific length, not TEXT unless needed"
+    - "Use DECIMAL for monetary values"
+    - "Use TIMESTAMP WITH TIME ZONE for dates"
+  constraints:
+    - "Define primary keys for all tables"
+    - "Define foreign keys for referential integrity"
+    - "Use CHECK constraints for data validation"
+    - "Use NOT NULL where appropriate"
+
+best_practices:
+  queries:
+    - "Use explicit column names instead of SELECT *"
+    - "Use table aliases for readability"
+    - "Use JOIN instead of subqueries when possible"
+    - "Use WHERE clause to filter data early"
+    - "Use appropriate join types (INNER, LEFT, RIGHT, FULL)"
+  performance:
+    - "Create indexes on frequently queried columns"
+    - "Create composite indexes for multi-column queries"
+    - "Avoid functions on indexed columns in WHERE"
+    - "Use EXPLAIN/EXPLAIN ANALYZE to optimize queries"
+    - "Limit result sets with LIMIT/TOP"
+  transactions:
+    - "Use transactions for multi-statement operations"
+    - "Keep transactions short"
+    - "Use appropriate isolation levels"
+    - "Always commit or rollback explicitly"
+  security:
+    - "Use parameterized queries to prevent SQL injection"
+    - "Grant minimum necessary privileges"
+    - "Use views to restrict data access"
+    - "Encrypt sensitive data at rest"
+
+code_organization:
+  scripts:
+    - "One DDL operation per file for version control"
+    - "Use migrations for schema changes"
+    - "Include rollback scripts"
+    - "Version control all SQL scripts"
+  formatting:
+    - "Use uppercase for SQL keywords"
+    - "Use lowercase for identifiers"
+    - "Indent nested queries"
+    - "One clause per line for complex queries"
+  comments:
+    - "Document complex business logic"
+    - "Explain non-obvious performance optimizations"
+    - "Include examples for stored procedures"
+
+stored_procedures:
+  - "Use clear, descriptive names"
+  - "Document parameters and return values"
+  - "Handle errors appropriately"
+  - "Use consistent formatting"
+  - "Avoid cursors when set-based operations work"
+
+views:
+  - "Name views with 'v_' or '_view' suffix"
+  - "Document view purpose"
+  - "Keep views simple for maintainability"
+  - "Use indexed views for performance when appropriate"
+
+testing:
+  - "Test queries with representative data volumes"
+  - "Test edge cases and null values"
+  - "Verify constraint enforcement"
+  - "Test transaction rollback scenarios"
+  - "Benchmark performance of complex queries"
+
+documentation:
+  - "Document schema design decisions"
+  - "Maintain data dictionary"
+  - "Document stored procedures and functions"
+  - "Include ER diagrams for complex schemas"

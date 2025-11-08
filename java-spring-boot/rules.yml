@@ -1,0 +1,129 @@
+version: "1.0.0"
+language: "Java"
+framework: "Spring Boot 3.0+"
+
+naming_conventions:
+  classes:
+    - rule: "Use PascalCase for class names"
+      example: "public class UserService"
+  interfaces:
+    - rule: "Use PascalCase, no 'I' prefix"
+      example: "public interface UserRepository"
+  methods:
+    - rule: "Use camelCase for method names"
+      example: "public void processOrder()"
+  variables:
+    - rule: "Use camelCase for variables"
+      example: "String userName = 'John';"
+  constants:
+    - rule: "Use UPPER_SNAKE_CASE for constants"
+      example: "public static final int MAX_RETRIES = 3;"
+  packages:
+    - rule: "Use lowercase, reverse domain notation"
+      example: "com.example.myapp.service"
+
+code_organization:
+  package_structure:
+    - "com.company.project.config - Configuration classes"
+    - "com.company.project.controller - REST controllers"
+    - "com.company.project.service - Business logic"
+    - "com.company.project.repository - Data access"
+    - "com.company.project.model - Domain entities"
+    - "com.company.project.dto - Data transfer objects"
+    - "com.company.project.exception - Custom exceptions"
+  class_structure:
+    - "Static constants"
+    - "Instance fields"
+    - "Constructors"
+    - "Public methods"
+    - "Protected methods"
+    - "Private methods"
+  imports:
+    - "Group imports by package"
+    - "Remove unused imports"
+    - "Use IDE auto-formatting"
+
+spring_boot_best_practices:
+  dependency_injection:
+    - "Use constructor injection over field injection"
+    - "Inject interfaces, not implementations"
+    - "Use @Autowired on constructor (optional in Spring 4.3+)"
+    - "Use @Qualifier for multiple beans of same type"
+  annotations:
+    - "@RestController for REST APIs"
+    - "@Service for business logic"
+    - "@Repository for data access"
+    - "@Component for general components"
+    - "@Configuration for configuration classes"
+  configuration:
+    - "Use application.yml over application.properties"
+    - "Use profiles for environment-specific config"
+    - "Use @ConfigurationProperties for grouped properties"
+    - "Externalize configuration"
+  rest_controllers:
+    - "Use proper HTTP methods (GET, POST, PUT, DELETE)"
+    - "Use @PathVariable for path parameters"
+    - "Use @RequestParam for query parameters"
+    - "Use @RequestBody for request payload"
+    - "Return ResponseEntity for full control"
+
+data_access:
+  jpa_repositories:
+    - "Extend JpaRepository for CRUD operations"
+    - "Use method naming conventions for queries"
+    - "Use @Query for complex queries"
+    - "Use pagination for large result sets"
+  entities:
+    - "Use @Entity annotation"
+    - "Always define @Id"
+    - "Use @GeneratedValue for auto-increment"
+    - "Use appropriate fetch types (LAZY vs EAGER)"
+    - "Implement equals() and hashCode()"
+  transactions:
+    - "Use @Transactional on service methods"
+    - "Use readOnly=true for read-only operations"
+    - "Handle exceptions properly"
+    - "Keep transactions short"
+
+validation:
+  - "Use Bean Validation annotations (@NotNull, @Size, etc.)"
+  - "Validate at controller level with @Valid"
+  - "Create custom validators for complex rules"
+  - "Provide meaningful validation messages"
+
+error_handling:
+  - "Use @ControllerAdvice for global exception handling"
+  - "Create custom exception classes"
+  - "Return consistent error responses"
+  - "Log exceptions with context"
+  - "Use proper HTTP status codes"
+
+security:
+  - "Use Spring Security for authentication/authorization"
+  - "Never log sensitive data"
+  - "Use HTTPS for production"
+  - "Implement CSRF protection"
+  - "Use parameterized queries"
+  - "Validate and sanitize inputs"
+
+testing:
+  - "Use JUnit 5 for unit tests"
+  - "Use @SpringBootTest for integration tests"
+  - "Use @WebMvcTest for controller tests"
+  - "Use @DataJpaTest for repository tests"
+  - "Mock dependencies with Mockito"
+  - "Use TestContainers for database tests"
+
+performance:
+  - "Use caching with @Cacheable"
+  - "Use async processing with @Async"
+  - "Implement pagination"
+  - "Use database indexes"
+  - "Monitor with Spring Boot Actuator"
+  - "Profile application for bottlenecks"
+
+documentation:
+  - "Use JavaDoc for public APIs"
+  - "Use Swagger/OpenAPI for REST API documentation"
+  - "Document complex business logic"
+  - "Keep README updated"

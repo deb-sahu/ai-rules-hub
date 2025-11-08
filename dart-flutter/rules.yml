@@ -1,0 +1,145 @@
+version: "1.0.0"
+language: "Dart"
+framework: "Flutter 3.0+"
+
+naming_conventions:
+  classes:
+    - rule: "Use PascalCase for class names"
+      example: "class UserProfile"
+  files:
+    - rule: "Use snake_case for file names"
+      example: "user_profile.dart"
+  functions:
+    - rule: "Use camelCase for function names"
+      example: "void getUserData()"
+  variables:
+    - rule: "Use camelCase for variables"
+      example: "String userName = 'John';"
+  constants:
+    - rule: "Use camelCase with const keyword"
+      example: "const maxRetries = 3;"
+  private:
+    - rule: "Use leading underscore for private members"
+      example: "_privateMethod(), _privateField"
+
+code_organization:
+  project_structure:
+    - "lib/main.dart - App entry point"
+    - "lib/screens/ - Screen widgets"
+    - "lib/widgets/ - Reusable widgets"
+    - "lib/models/ - Data models"
+    - "lib/services/ - Business logic and API calls"
+    - "lib/providers/ - State management (if using Provider)"
+    - "lib/utils/ - Utility functions"
+    - "lib/constants/ - App constants"
+  file_structure:
+    - "One main widget per file"
+    - "Group related widgets in same file if small"
+    - "Use barrel files (index.dart) for clean exports"
+  imports:
+    - "Dart SDK imports first"
+    - "Package imports second"
+    - "Project imports third"
+    - "Separate groups with blank lines"
+
+widget_best_practices:
+  stateless_vs_stateful:
+    - "Use StatelessWidget when state doesn't change"
+    - "Use StatefulWidget when state changes"
+    - "Consider using hooks with flutter_hooks"
+  widget_composition:
+    - "Break down complex widgets into smaller widgets"
+    - "Extract reusable widgets"
+    - "Use const constructors when possible"
+    - "Prefer composition over inheritance"
+  build_method:
+    - "Keep build methods small and focused"
+    - "Extract widget trees into methods or widgets"
+    - "Return const widgets when possible"
+  keys:
+    - "Use keys for widgets in lists"
+    - "Use GlobalKey sparingly"
+    - "Use ValueKey for dynamic lists"
+
+state_management:
+  approaches:
+    - "Provider - Simple and official"
+    - "Riverpod - More powerful Provider"
+    - "BLoC - For complex state"
+    - "GetX - All-in-one solution"
+    - "setState - For simple local state"
+  best_practices:
+    - "Keep state close to where it's used"
+    - "Lift state up when needed by multiple widgets"
+    - "Use immutable state objects"
+    - "Separate business logic from UI"
+
+async_programming:
+  - "Use async/await for asynchronous operations"
+  - "Use FutureBuilder for one-time async operations"
+  - "Use StreamBuilder for continuous data streams"
+  - "Handle loading and error states"
+  - "Cancel subscriptions in dispose()"
+
+null_safety:
+  - "Enable null safety in pubspec.yaml"
+  - "Use non-nullable types by default"
+  - "Use nullable types (?) when needed"
+  - "Use ! operator carefully"
+  - "Use ?? for default values"
+  - "Use ?. for safe navigation"
+
+performance:
+  - "Use const constructors for immutable widgets"
+  - "Avoid rebuilding entire widget trees"
+  - "Use ListView.builder for long lists"
+  - "Implement shouldRebuild for CustomPainter"
+  - "Use RepaintBoundary for expensive widgets"
+  - "Profile with Flutter DevTools"
+
+navigation:
+  - "Use named routes for navigation"
+  - "Use Navigator 2.0 for complex navigation"
+  - "Pass data through route arguments"
+  - "Handle back button properly"
+
+styling:
+  - "Define theme in MaterialApp"
+  - "Use ThemeData for consistent styling"
+  - "Extract custom colors into constants"
+  - "Use MediaQuery for responsive design"
+  - "Use LayoutBuilder for adaptive layouts"
+
+error_handling:
+  - "Use try-catch for error handling"
+  - "Show user-friendly error messages"
+  - "Log errors for debugging"
+  - "Use ErrorWidget.builder for custom error widgets"
+  - "Handle network errors gracefully"
+
+testing:
+  - "Write widget tests for UI"
+  - "Write unit tests for business logic"
+  - "Write integration tests for flows"
+  - "Use mockito for mocking"
+  - "Test edge cases and error scenarios"
+
+security:
+  - "Store secrets in environment variables"
+  - "Use HTTPS for API calls"
+  - "Validate user inputs"
+  - "Use secure storage for sensitive data"
+  - "Implement proper authentication"
+
+accessibility:
+  - "Use Semantics widget"
+  - "Provide meaningful labels"
+  - "Ensure sufficient color contrast"
+  - "Support screen readers"
+  - "Test with TalkBack/VoiceOver"
+
+documentation:
+  - "Document public APIs with dartdoc"
+  - "Include examples in documentation"
+  - "Keep README updated"
+  - "Document complex business logic"
