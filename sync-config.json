@@ -1,0 +1,62 @@
+{
+  "version": "1.0.0",
+  "name": "AI Rules Hub Sync Configuration",
+  "description": "Configuration for syncing AI coding standards across different AI-powered development tools",
+  "syncSettings": {
+    "autoSync": true,
+    "syncInterval": "daily",
+    "conflictResolution": "latest"
+  },
+  "tools": {
+    "copilot": {
+      "enabled": true,
+      "settings": {
+        "useRulesFile": true,
+        "useStyleguide": true,
+        "useSnippets": true
+      }
+    },
+    "cursor": {
+      "enabled": true,
+      "settings": {
+        "useRulesFile": true,
+        "useStyleguide": true,
+        "useSnippets": true,
+        "contextWindow": "large"
+      }
+    },
+    "codewhisperer": {
+      "enabled": true,
+      "settings": {
+        "useRulesFile": true,
+        "useStyleguide": false,
+        "useSnippets": true
+      }
+    },
+    "tabnine": {
+      "enabled": true,
+      "settings": {
+        "useRulesFile": true,
+        "useStyleguide": true,
+        "useSnippets": true
+      }
+    }
+  },
+  "paths": {
+    "rulesIndex": ".ai-rules-index.json",
+    "languageFolders": [
+      "csharp-dotnet",
+      "typescript",
+      "react",
+      "sql",
+      "python",
+      "java-spring-boot",
+      "dart-flutter"
+    ]
+  },
+  "rules": {
+    "enforceConsistency": true,
+    "validateBeforeSync": true,
+    "backupBeforeUpdate": true
+  }
+}

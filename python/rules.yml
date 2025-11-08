@@ -1,0 +1,114 @@
+version: "1.0.0"
+language: "Python"
+target: "Python 3.8+"
+
+naming_conventions:
+  modules:
+    - rule: "Use lowercase with underscores"
+      example: "user_service.py, data_utils.py"
+  classes:
+    - rule: "Use PascalCase for class names"
+      example: "class UserService:"
+  functions:
+    - rule: "Use lowercase with underscores"
+      example: "def get_user_by_id():"
+  variables:
+    - rule: "Use lowercase with underscores"
+      example: "user_name = 'John'"
+  constants:
+    - rule: "Use UPPERCASE with underscores"
+      example: "MAX_RETRIES = 3"
+  private:
+    - rule: "Use leading underscore for private methods/attributes"
+      example: "_internal_method(), _private_var"
+
+code_organization:
+  imports:
+    - "Standard library imports first"
+    - "Third-party imports second"
+    - "Local application imports third"
+    - "Separate groups with blank line"
+    - "Use absolute imports over relative"
+  module_structure:
+    - "Module docstring at top"
+    - "Imports"
+    - "Constants"
+    - "Exception classes"
+    - "Other classes"
+    - "Functions"
+    - "if __name__ == '__main__' block"
+
+best_practices:
+  type_hints:
+    - "Use type hints for function parameters and returns"
+    - "Use Optional for nullable values"
+    - "Use Union for multiple types"
+    - "Use TypedDict for structured dictionaries"
+  docstrings:
+    - "Use docstrings for modules, classes, and functions"
+    - "Follow Google or NumPy style"
+    - "Include parameters, returns, and raises sections"
+  context_managers:
+    - "Use with statement for file operations"
+    - "Use with statement for locks and connections"
+    - "Create custom context managers when appropriate"
+  list_comprehensions:
+    - "Use list comprehensions for simple transformations"
+    - "Keep comprehensions readable (max 2 clauses)"
+    - "Use generator expressions for large datasets"
+  error_handling:
+    - "Use specific exception types"
+    - "Don't catch generic Exception unless necessary"
+    - "Use finally for cleanup"
+    - "Create custom exceptions for domain errors"
+
+pythonic_patterns:
+  iterables:
+    - "Use enumerate() instead of range(len())"
+    - "Use zip() for parallel iteration"
+    - "Use itertools for complex iterations"
+  dictionaries:
+    - "Use get() with default values"
+    - "Use dict comprehensions"
+    - "Use defaultdict for automatic initialization"
+  strings:
+    - "Use f-strings for formatting"
+    - "Use str.join() for concatenation"
+    - "Use triple quotes for multi-line strings"
+  functions:
+    - "Use *args and **kwargs for flexible arguments"
+    - "Use keyword-only arguments for clarity"
+    - "Use default mutable arguments carefully"
+
+performance:
+  - "Use built-in functions and libraries"
+  - "Use list comprehensions over map/filter when readable"
+  - "Use generators for memory efficiency"
+  - "Profile code before optimizing"
+  - "Use appropriate data structures (set for membership tests)"
+
+async_programming:
+  - "Use async/await for I/O-bound operations"
+  - "Use asyncio.gather() for concurrent operations"
+  - "Don't mix sync and async code carelessly"
+  - "Use aiohttp for async HTTP requests"
+
+testing:
+  - "Use pytest for testing"
+  - "Follow AAA pattern (Arrange, Act, Assert)"
+  - "Use fixtures for setup and teardown"
+  - "Mock external dependencies"
+  - "Use parametrize for multiple test cases"
+
+security:
+  - "Validate and sanitize user inputs"
+  - "Use environment variables for secrets"
+  - "Use parameterized queries for SQL"
+  - "Keep dependencies updated"
+  - "Use secrets module for cryptographic randomness"
+
+documentation:
+  - "Write clear docstrings"
+  - "Use type hints"
+  - "Include examples in docstrings"
+  - "Keep comments up-to-date"

@@ -1,0 +1,72 @@
+{
+  "version": "1.0.0",
+  "name": "AI Rules Hub",
+  "description": "Centralized, provider-agnostic source of coding rules and standards for different languages and frameworks",
+  "languages": [
+    {
+      "name": "C#/.NET",
+      "path": "csharp-dotnet",
+      "rulesFile": "csharp-dotnet/rules.yml",
+      "styleguideFile": "csharp-dotnet/styleguide.md",
+      "snippetsPath": "csharp-dotnet/snippets"
+    },
+    {
+      "name": "TypeScript",
+      "path": "typescript",
+      "rulesFile": "typescript/rules.yml",
+      "styleguideFile": "typescript/styleguide.md",
+      "snippetsPath": "typescript/snippets"
+    },
+    {
+      "name": "React",
+      "path": "react",
+      "rulesFile": "react/rules.yml",
+      "styleguideFile": "react/styleguide.md",
+      "snippetsPath": "react/snippets"
+    },
+    {
+      "name": "SQL",
+      "path": "sql",
+      "rulesFile": "sql/rules.yml",
+      "styleguideFile": "sql/styleguide.md",
+      "snippetsPath": "sql/snippets"
+    },
+    {
+      "name": "Python",
+      "path": "python",
+      "rulesFile": "python/rules.yml",
+      "styleguideFile": "python/styleguide.md",
+      "snippetsPath": "python/snippets"
+    },
+    {
+      "name": "Java/Spring Boot",
+      "path": "java-spring-boot",
+      "rulesFile": "java-spring-boot/rules.yml",
+      "styleguideFile": "java-spring-boot/styleguide.md",
+      "snippetsPath": "java-spring-boot/snippets"
+    },
+    {
+      "name": "Dart/Flutter",
+      "path": "dart-flutter",
+      "rulesFile": "dart-flutter/rules.yml",
+      "styleguideFile": "dart-flutter/styleguide.md",
+      "snippetsPath": "dart-flutter/snippets"
+    }
+  ],
+  "aiTools": {
+    "copilot": {
+      "enabled": true,
+      "syncPath": ".ai-rules-index.json"
+    },
+    "cursor": {
+      "enabled": true,
+      "syncPath": "sync-config.json"
+    },
+    "codewhisperer": {
+      "enabled": true
+    },
+    "tabnine": {
+      "enabled": true
+    }
+  }
+}
