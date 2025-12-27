@@ -1,488 +1,466 @@
 # C#/.NET Style Guide
 
+This style guide provides concrete examples and best practices for writing clean, maintainable C#/.NET code.
+
 ## Table of Contents
 - [Naming Conventions](#naming-conventions)
 - [Code Organization](#code-organization)
-- [Best Practices](#best-practices)
-- [Security](#security)
-- [Performance](#performance)
+- [Dependency Injection](#dependency-injection)
+- [Async/Await Patterns](#asyncawait-patterns)
+- [Error Handling](#error-handling)
+- [LINQ Usage](#linq-usage)
 - [Testing](#testing)
 
 ## Naming Conventions
 
-### Classes and Interfaces
-
-✅ **Good:**
+### ✅ Good
 ```csharp
-public class UserRepository { }
-public interface IUserService { }
-public class OrderProcessor { }
-```
-
-❌ **Bad:**
-```csharp
-public class userRepository { }
-public interface UserService { }  // Missing 'I' prefix
-public class order_processor { }
-```
-
-### Methods and Properties
-
-✅ **Good:**
-```csharp
+// Classes and methods use PascalCase
 public class UserService
 {
+    private readonly IUserRepository _userRepository;
+    private readonly ILogger<UserService> _logger;
+    
+    // Private fields with underscore prefix
     public async Task<User> GetUserByIdAsync(int userId)
     {
-        // Implementation
+        // Local variables use camelCase
+        var user = await _userRepository.GetByIdAsync(userId);
+        return user;
     }
+}
 
-    public string FullName { get; set; }
+// Interfaces prefixed with 'I'
+public interface IUserRepository
+{
+    Task<User> GetByIdAsync(int id);
 }
 ```
 
-❌ **Bad:**
+### ❌ Bad
 ```csharp
-public class UserService
+// Incorrect naming conventions
+public class userservice  // Should be PascalCase
 {
-    public async Task<User> getUserById(int userId)  // Should be PascalCase
+    private IUserRepository UserRepository;  // Should use camelCase with underscore
+    
+    public User getuser(int ID)  // Should be GetUser, camelCase for parameters
     {
-        // Implementation
-    }
-
-    public string full_name { get; set; }  // Should be PascalCase
-}
-```
-
-### Fields and Variables
-
-✅ **Good:**
-```csharp
-public class OrderService
-{
-    private readonly ILogger<OrderService> _logger;
-    private readonly IOrderRepository _orderRepository;
-
-    public void ProcessOrder(int orderId)
-    {
-        var order = _orderRepository.GetById(orderId);
-        var totalAmount = CalculateTotal(order);
-    }
-}
-```
-
-❌ **Bad:**
-```csharp
-public class OrderService
-{
-    private readonly ILogger<OrderService> logger;  // Missing underscore
-    private readonly IOrderRepository OrderRepository;  // Should be camelCase with underscore
-
-    public void ProcessOrder(int OrderId)  // Parameter should be camelCase
-    {
-        var Order = _orderRepository.GetById(OrderId);
-        var TotalAmount = CalculateTotal(Order);
+        var User = UserRepository.GetById(ID);  // User should be lowercase
+        return User;
     }
 }
 ```
 
 ## Code Organization
 
-### Using Directives
-
-✅ **Good:**
+### ✅ Good
 ```csharp
+// UserService.cs - One class per file
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MyApp.Core.Interfaces;
-using MyApp.Core.Models;
+using MyApp.Domain.Entities;
+using MyApp.Domain.Interfaces;
 
-namespace MyApp.Services
+namespace MyApp.Application.Services
 {
     public class UserService : IUserService
     {
-        // Implementation
+        // Fields
+        private readonly IUserRepository _repository;
+        private readonly ILogger<UserService> _logger;
+        
+        // Constructor
+        public UserService(IUserRepository repository, ILogger<UserService> logger)
+        {
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+        
+        // Properties
+        public int MaxRetryCount { get; set; } = 3;
+        
+        // Methods
+        public async Task<User?> GetUserAsync(int userId)
+        {
+            _logger.LogInformation("Fetching user with ID: {UserId}", userId);
+            return await _repository.GetByIdAsync(userId);
+        }
     }
 }
 ```
 
-### Class Member Order
+## Dependency Injection
 
-✅ **Good:**
+### ✅ Good
+```csharp
+// Startup.cs or Program.cs
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddScoped<IUserRepository, UserRepository>();
+    services.AddScoped<IUserService, UserService>();
+}
+
+// UserService.cs
+public class UserService
+{
+    private readonly IUserRepository _repository;
+    private readonly IEmailService _emailService;
+    
+    public UserService(IUserRepository repository, IEmailService emailService)
+    {
+        _repository = repository;
+        _emailService = emailService;
+    }
+    
+    public async Task CreateUserAsync(User user)
+    {
+        await _repository.AddAsync(user);
+        await _emailService.SendWelcomeEmailAsync(user.Email);
+    }
+}
+```
+
+### ❌ Bad
+```csharp
+// Creating dependencies directly
+public class UserService
+{
+    public async Task CreateUserAsync(User user)
+    {
+        // Bad: creating dependencies manually
+        var repository = new UserRepository();
+        var emailService = new EmailService();
+        
+        await repository.AddAsync(user);
+        await emailService.SendWelcomeEmailAsync(user.Email);
+    }
+}
+```
+
+## Async/Await Patterns
+
+### ✅ Good
 ```csharp
 public class UserService
 {
-    // Constants
-    private const int MaxRetries = 3;
-
-    // Fields
-    private readonly IUserRepository _userRepository;
-    private readonly ILogger<UserService> _logger;
-
-    // Constructor
-    public UserService(IUserRepository userRepository, ILogger<UserService> logger)
+    private readonly IUserRepository _repository;
+    
+    // Async method with proper naming
+    public async Task<User?> GetUserAsync(int userId)
     {
-        _userRepository = userRepository;
-        _logger = logger;
+        return await _repository.GetByIdAsync(userId);
     }
+    
+    // Parallel execution for independent operations
+    public async Task<UserProfileData> GetUserProfileDataAsync(int userId)
+    {
+        var userTask = _repository.GetUserAsync(userId);
+        var ordersTask = _orderRepository.GetOrdersByUserIdAsync(userId);
+        var preferencesTask = _preferenceRepository.GetPreferencesAsync(userId);
+        
+        await Task.WhenAll(userTask, ordersTask, preferencesTask);
+        
+        return new UserProfileData
+        {
+            User = await userTask,
+            Orders = await ordersTask,
+            Preferences = await preferencesTask
+        };
+    }
+    
+    // ConfigureAwait for library code
+    public async Task<bool> IsUserActiveAsync(int userId)
+    {
+        var user = await _repository.GetByIdAsync(userId).ConfigureAwait(false);
+        return user?.IsActive ?? false;
+    }
+}
+```
 
-    // Properties
-    public int ActiveUsers { get; private set; }
+### ❌ Bad
+```csharp
+public class UserService
+{
+    // Missing Async suffix
+    public async Task<User> GetUser(int userId)
+    {
+        // Bad: blocking on async code
+        return _repository.GetByIdAsync(userId).Result;
+    }
+    
+    // Bad: unnecessary async/await
+    public async Task<User> FindUserAsync(int userId)
+    {
+        return await _repository.GetByIdAsync(userId);
+    }
+    // Should be: public Task<User> FindUserAsync(int userId) => _repository.GetByIdAsync(userId);
+}
+```
 
-    // Public methods
+## Error Handling
+
+### ✅ Good
+```csharp
+public class UserService
+{
+    private readonly ILogger<UserService> _logger;
+    
     public async Task<User> GetUserAsync(int userId)
     {
-        return await _userRepository.GetByIdAsync(userId);
-    }
-
-    // Private methods
-    private void LogUserActivity(int userId)
-    {
-        _logger.LogInformation("User {UserId} accessed", userId);
-    }
-}
-```
-
-## Best Practices
-
-### Async/Await
-
-✅ **Good:**
-```csharp
-public class OrderService
-{
-    private readonly IOrderRepository _orderRepository;
-
-    public async Task<Order> CreateOrderAsync(Order order)
-    {
-        ValidateOrder(order);
-        var createdOrder = await _orderRepository.AddAsync(order);
-        await _orderRepository.SaveChangesAsync();
-        return createdOrder;
-    }
-}
-```
-
-❌ **Bad:**
-```csharp
-public class OrderService
-{
-    private readonly IOrderRepository _orderRepository;
-
-    public Order CreateOrder(Order order)  // Should be async
-    {
-        ValidateOrder(order);
-        var createdOrder = _orderRepository.AddAsync(order).Result;  // Don't use .Result
-        _orderRepository.SaveChangesAsync().Wait();  // Don't use .Wait()
-        return createdOrder;
-    }
-}
-```
-
-### Dependency Injection
-
-✅ **Good:**
-```csharp
-public interface IEmailService
-{
-    Task SendEmailAsync(string to, string subject, string body);
-}
-
-public class EmailService : IEmailService
-{
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<EmailService> _logger;
-
-    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
-    {
-        _configuration = configuration;
-        _logger = logger;
-    }
-
-    public async Task SendEmailAsync(string to, string subject, string body)
-    {
-        // Implementation
-    }
-}
-
-// Registration in Program.cs
-builder.Services.AddScoped<IEmailService, EmailService>();
-```
-
-### Error Handling
-
-✅ **Good:**
-```csharp
-public async Task<User> GetUserAsync(int userId)
-{
-    try
-    {
-        if (userId <= 0)
+        try
         {
-            throw new ArgumentException("User ID must be positive", nameof(userId));
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be positive", nameof(userId));
+            }
+            
+            var user = await _repository.GetByIdAsync(userId);
+            
+            if (user == null)
+            {
+                throw new UserNotFoundException($"User with ID {userId} not found");
+            }
+            
+            return user;
         }
-
-        var user = await _userRepository.GetByIdAsync(userId);
-        
-        if (user == null)
+        catch (SqlException ex) when (ex.Number == 2601)
         {
-            throw new UserNotFoundException($"User with ID {userId} not found");
+            _logger.LogWarning(ex, "Duplicate key violation for user {UserId}", userId);
+            throw new DuplicateUserException("User already exists", ex);
         }
-
-        return user;
-    }
-    catch (UserNotFoundException ex)
-    {
-        _logger.LogWarning(ex, "User not found: {UserId}", userId);
-        throw;
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error retrieving user: {UserId}", userId);
-        throw;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching user {UserId}", userId);
+            throw;
+        }
     }
 }
-```
 
-❌ **Bad:**
-```csharp
-public async Task<User> GetUserAsync(int userId)
+// Custom exception
+public class UserNotFoundException : Exception
 {
-    try
-    {
-        return await _userRepository.GetByIdAsync(userId);
-    }
-    catch (Exception ex)  // Too generic
-    {
-        // Swallowing the exception
-        return null;
-    }
+    public UserNotFoundException(string message) : base(message) { }
 }
 ```
 
-### LINQ Usage
-
-✅ **Good:**
+### ❌ Bad
 ```csharp
-// Method syntax for complex queries
-var activeUsers = users
-    .Where(u => u.IsActive)
-    .OrderBy(u => u.LastName)
-    .ThenBy(u => u.FirstName)
-    .Select(u => new UserDto
-    {
-        Id = u.Id,
-        FullName = $"{u.FirstName} {u.LastName}",
-        Email = u.Email
-    })
-    .ToList();
-
-// Query syntax for readable queries
-var query = from user in users
-            where user.IsActive
-            orderby user.LastName
-            select user;
-```
-
-### Nullable Reference Types
-
-✅ **Good:**
-```csharp
-#nullable enable
-
 public class UserService
 {
-    private readonly IUserRepository _userRepository;
-
-    public async Task<User?> FindUserAsync(string? email)
+    public async Task<User> GetUserAsync(int userId)
     {
-        if (string.IsNullOrWhiteSpace(email))
+        try
         {
-            return null;
+            return await _repository.GetByIdAsync(userId);
         }
-
-        return await _userRepository.FindByEmailAsync(email);
-    }
-
-    public string GetUserDisplayName(User user)
-    {
-        return user?.FullName ?? "Unknown User";
-    }
-}
-```
-
-## Security
-
-### Input Validation
-
-✅ **Good:**
-```csharp
-public class UserRegistrationModel
-{
-    [Required]
-    [EmailAddress]
-    public string Email { get; set; } = string.Empty;
-
-    [Required]
-    [MinLength(8)]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$")]
-    public string Password { get; set; } = string.Empty;
-}
-
-public class UserController : ControllerBase
-{
-    [HttpPost]
-    public async Task<IActionResult> Register([FromBody] UserRegistrationModel model)
-    {
-        if (!ModelState.IsValid)
+        catch (Exception)  // Bad: catching generic exception without logging
         {
-            return BadRequest(ModelState);
+            return null;  // Bad: swallowing exception
         }
-
-        // Process registration
-        return Ok();
     }
 }
 ```
 
-### Parameterized Queries
+## LINQ Usage
 
-✅ **Good:**
+### ✅ Good
 ```csharp
-public async Task<User> GetUserByEmailAsync(string email)
+public class UserService
 {
-    var query = "SELECT * FROM Users WHERE Email = @Email";
-    return await _connection.QueryFirstOrDefaultAsync<User>(
-        query, 
-        new { Email = email }
-    );
-}
-```
-
-❌ **Bad:**
-```csharp
-public async Task<User> GetUserByEmailAsync(string email)
-{
-    // SQL Injection vulnerability!
-    var query = $"SELECT * FROM Users WHERE Email = '{email}'";
-    return await _connection.QueryFirstOrDefaultAsync<User>(query);
-}
-```
-
-## Performance
-
-### StringBuilder for String Concatenation
-
-✅ **Good:**
-```csharp
-public string BuildReport(List<string> items)
-{
-    var sb = new StringBuilder();
-    foreach (var item in items)
+    public List<User> GetActiveAdultUsers(List<User> users)
     {
-        sb.AppendLine($"Item: {item}");
+        // Clear, readable LINQ query
+        return users
+            .Where(u => u.IsActive)
+            .Where(u => u.Age >= 18)
+            .OrderBy(u => u.LastName)
+            .ThenBy(u => u.FirstName)
+            .ToList();
     }
-    return sb.ToString();
-}
-```
-
-❌ **Bad:**
-```csharp
-public string BuildReport(List<string> items)
-{
-    string report = "";
-    foreach (var item in items)
+    
+    public Dictionary<string, List<User>> GroupUsersByCountry(List<User> users)
     {
-        report += $"Item: {item}\n";  // Creates new string each iteration
+        return users
+            .GroupBy(u => u.Country)
+            .ToDictionary(g => g.Key, g => g.ToList());
     }
-    return report;
+    
+    public bool HasActiveUsers(List<User> users)
+    {
+        // Use Any() for existence checks
+        return users.Any(u => u.IsActive);
+    }
 }
 ```
 
-### Proper Resource Disposal
-
-✅ **Good:**
+### ❌ Bad
 ```csharp
-public async Task<string> ReadFileAsync(string path)
+public class UserService
 {
-    using var stream = new FileStream(path, FileMode.Open);
-    using var reader = new StreamReader(stream);
-    return await reader.ReadToEndAsync();
-}
-
-// Or with using statement
-public async Task<string> ReadFileAsync(string path)
-{
-    using (var stream = new FileStream(path, FileMode.Open))
-    using (var reader = new StreamReader(stream))
+    public List<User> GetActiveAdultUsers(List<User> users)
     {
-        return await reader.ReadToEndAsync();
+        // Bad: using loops instead of LINQ
+        var result = new List<User>();
+        foreach (var user in users)
+        {
+            if (user.IsActive && user.Age >= 18)
+            {
+                result.Add(user);
+            }
+        }
+        return result;
+    }
+    
+    public bool HasActiveUsers(List<User> users)
+    {
+        // Bad: using Count() when Any() is more efficient
+        return users.Where(u => u.IsActive).Count() > 0;
     }
 }
 ```
 
 ## Testing
 
-### Unit Test Structure
-
-✅ **Good:**
+### ✅ Good
 ```csharp
 public class UserServiceTests
 {
+    private readonly Mock<IUserRepository> _mockRepository;
+    private readonly Mock<ILogger<UserService>> _mockLogger;
+    private readonly UserService _service;
+    
+    public UserServiceTests()
+    {
+        _mockRepository = new Mock<IUserRepository>();
+        _mockLogger = new Mock<ILogger<UserService>>();
+        _service = new UserService(_mockRepository.Object, _mockLogger.Object);
+    }
+    
     [Fact]
-    public async Task GetUserAsync_ValidUserId_ReturnsUser()
+    public async Task GetUserAsync_WhenUserExists_ReturnsUser()
     {
         // Arrange
         var userId = 1;
-        var expectedUser = new User { Id = userId, Name = "Test User" };
-        var mockRepository = new Mock<IUserRepository>();
-        mockRepository
-            .Setup(r => r.GetByIdAsync(userId))
+        var expectedUser = new User { Id = userId, Name = "John Doe" };
+        _mockRepository.Setup(r => r.GetByIdAsync(userId))
             .ReturnsAsync(expectedUser);
         
-        var service = new UserService(mockRepository.Object);
-
         // Act
-        var result = await service.GetUserAsync(userId);
-
+        var result = await _service.GetUserAsync(userId);
+        
         // Assert
         Assert.NotNull(result);
         Assert.Equal(expectedUser.Id, result.Id);
         Assert.Equal(expectedUser.Name, result.Name);
     }
-
+    
     [Fact]
-    public async Task GetUserAsync_InvalidUserId_ThrowsArgumentException()
+    public async Task GetUserAsync_WhenUserDoesNotExist_ReturnsNull()
     {
         // Arrange
-        var service = new UserService(Mock.Of<IUserRepository>());
-
+        var userId = 999;
+        _mockRepository.Setup(r => r.GetByIdAsync(userId))
+            .ReturnsAsync((User?)null);
+        
+        // Act
+        var result = await _service.GetUserAsync(userId);
+        
+        // Assert
+        Assert.Null(result);
+    }
+    
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task GetUserAsync_WhenUserIdIsInvalid_ThrowsArgumentException(int invalidId)
+    {
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => service.GetUserAsync(-1)
-        );
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.GetUserAsync(invalidId));
     }
 }
 ```
 
-## Documentation
+## Resource Management
 
-### XML Documentation
-
-✅ **Good:**
+### ✅ Good
 ```csharp
-/// <summary>
-/// Retrieves a user by their unique identifier.
-/// </summary>
-/// <param name="userId">The unique identifier of the user.</param>
-/// <returns>A task that represents the asynchronous operation. The task result contains the user if found.</returns>
-/// <exception cref="ArgumentException">Thrown when userId is less than or equal to zero.</exception>
-/// <exception cref="UserNotFoundException">Thrown when the user is not found.</exception>
-public async Task<User> GetUserAsync(int userId)
+public class DataService
 {
-    // Implementation
+    // Using statement for automatic disposal
+    public async Task<string> ReadFileAsync(string path)
+    {
+        using var stream = File.OpenRead(path);
+        using var reader = new StreamReader(stream);
+        return await reader.ReadToEndAsync();
+    }
+    
+    // Using declaration (C# 8+)
+    public async Task ProcessDataAsync()
+    {
+        using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+        
+        using var command = new SqlCommand("SELECT * FROM Users", connection);
+        using var reader = await command.ExecuteReaderAsync();
+        
+        while (await reader.ReadAsync())
+        {
+            // Process data
+        }
+    }
+    
+    // IDisposable implementation
+    public class CustomResource : IDisposable
+    {
+        private bool _disposed = false;
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources
+                }
+                // Dispose unmanaged resources
+                _disposed = true;
+            }
+        }
+    }
 }
 ```
+
+### ❌ Bad
+```csharp
+public class DataService
+{
+    // Not disposing resources
+    public string ReadFile(string path)
+    {
+        var stream = File.OpenRead(path);
+        var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+        // Bad: stream and reader not disposed
+    }
+}
+```
+
+## Summary
+
+- Use consistent naming conventions (PascalCase, camelCase, interfaces with 'I')
+- Organize code logically (fields, constructor, properties, methods)
+- Leverage dependency injection for loose coupling
+- Use async/await for I/O operations
+- Handle errors appropriately with specific exceptions
+- Prefer LINQ for collection operations
+- Write comprehensive unit tests
+- Always dispose of resources properly

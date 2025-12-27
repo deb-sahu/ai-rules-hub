@@ -1,612 +1,695 @@
 # React Style Guide
 
+This style guide provides concrete examples and best practices for writing clean, maintainable React applications with TypeScript.
+
 ## Table of Contents
 - [Component Structure](#component-structure)
 - [Hooks](#hooks)
-- [Props and State](#props-and-state)
-- [Performance](#performance)
-- [Styling](#styling)
+- [State Management](#state-management)
+- [Event Handling](#event-handling)
+- [Conditional Rendering](#conditional-rendering)
+- [Performance Optimization](#performance-optimization)
+- [Forms](#forms)
 - [Testing](#testing)
-- [Accessibility](#accessibility)
 
 ## Component Structure
 
-### Functional Components
-
-✅ **Good:**
-```tsx
-import React from 'react';
-
-interface UserProfileProps {
-  userId: number;
-  userName: string;
-  onEdit?: () => void;
-}
-
-export const UserProfile: React.FC<UserProfileProps> = ({ 
-  userId, 
-  userName, 
-  onEdit 
-}) => {
-  const [isEditing, setIsEditing] = React.useState(false);
-
-  const handleEditClick = () => {
-    setIsEditing(true);
-    onEdit?.();
-  };
-
-  return (
-    <div className="user-profile">
-      <h2>{userName}</h2>
-      <p>User ID: {userId}</p>
-      <button onClick={handleEditClick}>Edit</button>
-    </div>
-  );
-};
-```
-
-❌ **Bad:**
-```tsx
-// Don't use class components
-class UserProfile extends React.Component {
-  render() {
-    return <div>{this.props.userName}</div>;
-  }
-}
-
-// Don't omit types
-export const UserProfile = (props) => {
-  return <div>{props.userName}</div>;
-};
-
-// Don't use default export for components
-export default function UserProfile() { }
-```
-
-### File Organization
-
-✅ **Good:**
-```tsx
+### ✅ Good
+```typescript
 // UserProfile.tsx
-import React from 'react';
-import { useUserData } from '@/hooks/useUserData';
-import { formatDate } from '@/utils/dateUtils';
-import type { User } from '@/types';
-import './UserProfile.css';
+import React, { useState, useEffect, useCallback } from 'react';
+import { User } from '../types';
+import { fetchUser } from '../api/userApi';
 
-// Types
 interface UserProfileProps {
-  userId: number;
+    userId: number;
+    onUpdate?: (user: User) => void;
 }
 
-// Component
-export const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
-  // Hooks
-  const [isEditing, setIsEditing] = React.useState(false);
-  const { user, loading, error } = useUserData(userId);
-
-  // Effects
-  React.useEffect(() => {
-    // Side effects
-  }, [userId]);
-
-  // Event handlers
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  // Render helpers
-  const renderUserInfo = () => {
+export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    
+    useEffect(() => {
+        let cancelled = false;
+        
+        const loadUser = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchUser(userId);
+                if (!cancelled) {
+                    setUser(data);
+                    setError(null);
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    setError('Failed to load user');
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        };
+        
+        loadUser();
+        
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
+    
+    const handleUpdate = useCallback(() => {
+        if (user && onUpdate) {
+            onUpdate(user);
+        }
+    }, [user, onUpdate]);
+    
     if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error.message}</div>;
+    if (error) return <div>Error: {error}</div>;
     if (!user) return <div>User not found</div>;
-
+    
     return (
-      <div>
-        <h2>{user.name}</h2>
-        <p>{user.email}</p>
-      </div>
+        <div className="user-profile">
+            <h2>{user.name}</h2>
+            <p>{user.email}</p>
+            <button onClick={handleUpdate}>Update</button>
+        </div>
     );
-  };
-
-  // Main render
-  return (
-    <div className="user-profile">
-      {renderUserInfo()}
-      <button onClick={handleEdit}>Edit</button>
-    </div>
-  );
 };
+```
+
+### ❌ Bad
+```typescript
+// Bad: Multiple components in one file, no types, class component
+export default class extends React.Component {
+    state = {
+        user: null,
+        loading: true
+    };
+    
+    componentDidMount() {
+        fetch(`/api/users/${this.props.userId}`)
+            .then(res => res.json())
+            .then(user => this.setState({ user, loading: false }));
+    }
+    
+    render() {
+        return <div>{this.state.loading ? 'Loading' : this.state.user.name}</div>;
+    }
+}
+
+function AnotherComponent() {  // Bad: multiple components per file
+    return <div>Another</div>;
+}
 ```
 
 ## Hooks
 
-### useState
-
-✅ **Good:**
-```tsx
-// Simple state
-const [count, setCount] = React.useState<number>(0);
-const [user, setUser] = React.useState<User | null>(null);
-const [isLoading, setIsLoading] = React.useState<boolean>(false);
-
-// Complex state with callback
-const [formData, setFormData] = React.useState<FormData>({
-  name: '',
-  email: '',
-  age: 0
-});
-
-const handleInputChange = (field: keyof FormData, value: string | number) => {
-  setFormData(prev => ({
-    ...prev,
-    [field]: value
-  }));
-};
-
-// Lazy initial state for expensive operations
-const [data, setData] = React.useState<Data>(() => {
-  return expensiveComputation();
-});
-```
-
-### useEffect
-
-✅ **Good:**
-```tsx
-// Fetch data on mount
-React.useEffect(() => {
-  let isMounted = true;
-
-  const fetchUser = async () => {
-    try {
-      const response = await fetch(`/api/users/${userId}`);
-      const data = await response.json();
-      
-      if (isMounted) {
-        setUser(data);
-      }
-    } catch (error) {
-      if (isMounted) {
-        setError(error);
-      }
-    }
-  };
-
-  fetchUser();
-
-  return () => {
-    isMounted = false;
-  };
-}, [userId]);
-
-// Cleanup subscription
-React.useEffect(() => {
-  const subscription = messageService.subscribe(message => {
-    setMessages(prev => [...prev, message]);
-  });
-
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
-
-// Multiple effects for different concerns
-React.useEffect(() => {
-  // Effect for user data
-}, [userId]);
-
-React.useEffect(() => {
-  // Effect for analytics
-}, [pageView]);
-```
-
-❌ **Bad:**
-```tsx
-// Missing dependency array
-React.useEffect(() => {
-  fetchUser(userId);  // Runs on every render!
-});
-
-// Missing cleanup
-React.useEffect(() => {
-  const interval = setInterval(() => {
-    updateTime();
-  }, 1000);
-  // Should return cleanup function
-}, []);
-
-// Everything in one effect
-React.useEffect(() => {
-  // Mixing multiple concerns
-  fetchUser();
-  trackPageView();
-  setupWebSocket();
-}, [userId, pageView, wsUrl]);
-```
-
-### Custom Hooks
-
-✅ **Good:**
-```tsx
-// useUserData.ts
-import { useState, useEffect } from 'react';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
+### ✅ Good
+```typescript
+// Custom hook for data fetching
+function useFetchUser(userId: number) {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+    
+    useEffect(() => {
+        let cancelled = false;
+        
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchUser(userId);
+                if (!cancelled) {
+                    setUser(data);
+                    setError(null);
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err as Error);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        };
+        
+        fetchData();
+        
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
+    
+    return { user, loading, error };
 }
 
-interface UseUserDataReturn {
-  user: User | null;
-  loading: boolean;
-  error: Error | null;
-  refetch: () => Promise<void>;
-}
-
-export const useUserData = (userId: number): UseUserDataReturn => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchUser = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch(`/api/users/${userId}`);
-      const data = await response.json();
-      setUser(data);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, [userId]);
-
-  return { user, loading, error, refetch: fetchUser };
+// Using the custom hook
+const UserComponent: React.FC<{ userId: number }> = ({ userId }) => {
+    const { user, loading, error } = useFetchUser(userId);
+    
+    if (loading) return <Spinner />;
+    if (error) return <ErrorMessage error={error} />;
+    if (!user) return <NotFound />;
+    
+    return <UserDisplay user={user} />;
 };
 
-// Usage
-const UserProfile: React.FC<{ userId: number }> = ({ userId }) => {
-  const { user, loading, error, refetch } = useUserData(userId);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!user) return <div>User not found</div>;
-
-  return (
-    <div>
-      <h2>{user.name}</h2>
-      <button onClick={refetch}>Refresh</button>
-    </div>
-  );
-};
-```
-
-### useCallback and useMemo
-
-✅ **Good:**
-```tsx
-const ExpensiveComponent: React.FC<Props> = ({ data, filter }) => {
-  // Memoize expensive computation
-  const filteredData = React.useMemo(() => {
-    return data.filter(item => item.category === filter);
-  }, [data, filter]);
-
-  // Memoize callback to prevent child re-renders
-  const handleItemClick = React.useCallback((id: number) => {
-    console.log('Item clicked:', id);
-    // Handle click
-  }, []);
-
-  return (
-    <div>
-      {filteredData.map(item => (
-        <Item 
-          key={item.id} 
-          item={item} 
-          onClick={handleItemClick} 
-        />
-      ))}
-    </div>
-  );
+// useCallback for event handlers
+const TodoList: React.FC = () => {
+    const [todos, setTodos] = useState<Todo[]>([]);
+    
+    const addTodo = useCallback((text: string) => {
+        setTodos(prev => [...prev, { id: Date.now(), text, completed: false }]);
+    }, []);
+    
+    const toggleTodo = useCallback((id: number) => {
+        setTodos(prev => 
+            prev.map(todo => 
+                todo.id === id ? { ...todo, completed: !todo.completed } : todo
+            )
+        );
+    }, []);
+    
+    return (
+        <div>
+            {todos.map(todo => (
+                <TodoItem 
+                    key={todo.id} 
+                    todo={todo} 
+                    onToggle={toggleTodo}
+                />
+            ))}
+        </div>
+    );
 };
 
-// Memoize the child component
-const Item = React.memo<ItemProps>(({ item, onClick }) => {
-  return (
-    <div onClick={() => onClick(item.id)}>
-      {item.name}
-    </div>
-  );
-});
-```
-
-## Props and State
-
-### Props Interface
-
-✅ **Good:**
-```tsx
-interface ButtonProps {
-  label: string;
-  onClick: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
-  disabled?: boolean;
-  children?: React.ReactNode;
-}
-
-export const Button: React.FC<ButtonProps> = ({
-  label,
-  onClick,
-  variant = 'primary',
-  disabled = false,
-  children
-}) => {
-  return (
-    <button
-      className={`btn btn-${variant}`}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {children || label}
-    </button>
-  );
-};
-
-// Props with generics
-interface ListProps<T> {
-  items: T[];
-  renderItem: (item: T) => React.ReactNode;
-  keyExtractor: (item: T) => string | number;
-}
-
-export const List = <T,>({ items, renderItem, keyExtractor }: ListProps<T>) => {
-  return (
-    <ul>
-      {items.map(item => (
-        <li key={keyExtractor(item)}>
-          {renderItem(item)}
-        </li>
-      ))}
-    </ul>
-  );
+// useMemo for expensive computations
+const DataTable: React.FC<{ data: Item[] }> = ({ data }) => {
+    const sortedData = useMemo(() => {
+        return [...data].sort((a, b) => a.name.localeCompare(b.name));
+    }, [data]);
+    
+    const statistics = useMemo(() => {
+        return {
+            total: data.length,
+            average: data.reduce((sum, item) => sum + item.value, 0) / data.length
+        };
+    }, [data]);
+    
+    return (
+        <div>
+            <Stats stats={statistics} />
+            <Table data={sortedData} />
+        </div>
+    );
 };
 ```
 
-### State Management
+### ❌ Bad
+```typescript
+// Bad: Missing dependencies in useEffect
+function UserProfile({ userId }) {
+    const [user, setUser] = useState(null);
+    
+    useEffect(() => {
+        fetchUser(userId).then(setUser);
+    }, []);  // Bad: missing userId dependency
+    
+    return <div>{user?.name}</div>;
+}
 
-✅ **Good:**
-```tsx
-// Simple local state
+// Bad: Not using useCallback for props
+function TodoList() {
+    const [todos, setTodos] = useState([]);
+    
+    return (
+        <div>
+            {todos.map(todo => (
+                <TodoItem 
+                    key={todo.id}
+                    todo={todo}
+                    // Bad: inline function creates new reference on each render
+                    onToggle={() => toggleTodo(todo.id)}
+                />
+            ))}
+        </div>
+    );
+}
+```
+
+## State Management
+
+### ✅ Good
+```typescript
+// Local state
 const Counter: React.FC = () => {
-  const [count, setCount] = React.useState(0);
-
-  const increment = () => setCount(c => c + 1);
-  const decrement = () => setCount(c => c - 1);
-
-  return (
-    <div>
-      <p>Count: {count}</p>
-      <button onClick={increment}>+</button>
-      <button onClick={decrement}>-</button>
-    </div>
-  );
+    const [count, setCount] = useState(0);
+    
+    const increment = () => setCount(prev => prev + 1);
+    const decrement = () => setCount(prev => prev - 1);
+    
+    return (
+        <div>
+            <button onClick={decrement}>-</button>
+            <span>{count}</span>
+            <button onClick={increment}>+</button>
+        </div>
+    );
 };
 
-// Complex state with useReducer
-type State = {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
+// Context for global state
+interface AuthContextType {
+    user: User | null;
+    login: (credentials: Credentials) => Promise<void>;
+    logout: () => void;
+}
+
+const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [user, setUser] = useState<User | null>(null);
+    
+    const login = useCallback(async (credentials: Credentials) => {
+        const userData = await api.login(credentials);
+        setUser(userData);
+    }, []);
+    
+    const logout = useCallback(() => {
+        setUser(null);
+    }, []);
+    
+    const value = useMemo(
+        () => ({ user, login, logout }),
+        [user, login, logout]
+    );
+    
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-type Action =
-  | { type: 'FETCH_START' }
-  | { type: 'FETCH_SUCCESS'; payload: User }
-  | { type: 'FETCH_ERROR'; payload: string };
-
-const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case 'FETCH_START':
-      return { ...state, loading: true, error: null };
-    case 'FETCH_SUCCESS':
-      return { ...state, loading: false, user: action.payload };
-    case 'FETCH_ERROR':
-      return { ...state, loading: false, error: action.payload };
-    default:
-      return state;
-  }
-};
-
-const UserProfile: React.FC = () => {
-  const [state, dispatch] = React.useReducer(reducer, {
-    user: null,
-    loading: false,
-    error: null
-  });
-
-  // Use dispatch to update state
-  const fetchUser = async () => {
-    dispatch({ type: 'FETCH_START' });
-    try {
-      const user = await api.getUser();
-      dispatch({ type: 'FETCH_SUCCESS', payload: user });
-    } catch (error) {
-      dispatch({ type: 'FETCH_ERROR', payload: error.message });
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within AuthProvider');
     }
-  };
+    return context;
+};
 
-  return <div>{/* Render based on state */}</div>;
+// Using the context
+const UserMenu: React.FC = () => {
+    const { user, logout } = useAuth();
+    
+    if (!user) return <LoginButton />;
+    
+    return (
+        <div>
+            <span>Welcome, {user.name}</span>
+            <button onClick={logout}>Logout</button>
+        </div>
+    );
 };
 ```
 
-## Performance
+### ❌ Bad
+```typescript
+// Bad: Prop drilling instead of context
+function App() {
+    const [user, setUser] = useState(null);
+    
+    return (
+        <Header user={user} setUser={setUser} />
+        <Main user={user} setUser={setUser} />
+        <Footer user={user} />
+    );
+}
 
-### React.memo
+function Header({ user, setUser }) {
+    return <Nav user={user} setUser={setUser} />;
+}
 
-✅ **Good:**
-```tsx
-// Memoize component to prevent unnecessary re-renders
-export const UserCard = React.memo<UserCardProps>(({ user, onEdit }) => {
-  return (
-    <div className="user-card">
-      <h3>{user.name}</h3>
-      <p>{user.email}</p>
-      <button onClick={onEdit}>Edit</button>
+function Nav({ user, setUser }) {
+    return <UserMenu user={user} setUser={setUser} />;
+}
+```
+
+## Event Handling
+
+### ✅ Good
+```typescript
+// Properly typed event handlers
+const LoginForm: React.FC = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+    };
+    
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
+            await login({ email, password });
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
+    };
+    
+    return (
+        <form onSubmit={handleSubmit}>
+            <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+            />
+            <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+            />
+            <button type="submit">Login</button>
+        </form>
+    );
+};
+
+// Debounced search input
+const SearchInput: React.FC<{ onSearch: (query: string) => void }> = ({ onSearch }) => {
+    const [query, setQuery] = useState('');
+    
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            onSearch(query);
+        }, 300);
+        
+        return () => clearTimeout(timeoutId);
+    }, [query, onSearch]);
+    
+    return (
+        <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search..."
+        />
+    );
+};
+```
+
+### ❌ Bad
+```typescript
+// Bad: Not preventing default, untyped events
+function LoginForm() {
+    const handleSubmit = (e) => {  // Bad: no type
+        login(email, password);  // Bad: didn't prevent default
+    };
+    
+    return (
+        <form onSubmit={handleSubmit}>
+            {/* Form fields */}
+        </form>
+    );
+}
+```
+
+## Conditional Rendering
+
+### ✅ Good
+```typescript
+// Early returns for loading/error states
+const UserProfile: React.FC<{ userId: number }> = ({ userId }) => {
+    const { user, loading, error } = useFetchUser(userId);
+    
+    if (loading) {
+        return <Spinner />;
+    }
+    
+    if (error) {
+        return <ErrorMessage message={error.message} />;
+    }
+    
+    if (!user) {
+        return <NotFound />;
+    }
+    
+    return (
+        <div className="user-profile">
+            <h2>{user.name}</h2>
+            <p>{user.email}</p>
+        </div>
+    );
+};
+
+// Ternary for simple conditions
+const Badge: React.FC<{ count: number }> = ({ count }) => (
+    <span className={count > 0 ? 'badge active' : 'badge'}>
+        {count > 99 ? '99+' : count}
+    </span>
+);
+
+// Logical AND for optional rendering
+const Notification: React.FC<{ message?: string }> = ({ message }) => (
+    <div>
+        {message && <Alert message={message} />}
     </div>
-  );
-});
+);
 
-// Custom comparison function
-export const UserCard = React.memo<UserCardProps>(
-  ({ user, onEdit }) => {
-    return <div>{/* Component JSX */}</div>;
-  },
-  (prevProps, nextProps) => {
-    return prevProps.user.id === nextProps.user.id;
-  }
+// Using fragments
+const UserInfo: React.FC<{ user: User }> = ({ user }) => (
+    <>
+        <h3>{user.name}</h3>
+        <p>{user.email}</p>
+    </>
 );
 ```
 
-### Code Splitting
+### ❌ Bad
+```typescript
+// Bad: Nested ternaries
+const Status = ({ user }) => (
+    <div>
+        {user ? (
+            user.isActive ? (
+                user.isPremium ? 'Premium Active' : 'Active'
+            ) : 'Inactive'
+        ) : 'No User'}
+    </div>
+);
 
-✅ **Good:**
-```tsx
-import React, { Suspense } from 'react';
-
-// Lazy load components
-const Dashboard = React.lazy(() => import('./Dashboard'));
-const UserProfile = React.lazy(() => import('./UserProfile'));
-const Settings = React.lazy(() => import('./Settings'));
-
-export const App: React.FC = () => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
-    </Suspense>
-  );
-};
+// Bad: Using index as key
+function TodoList({ todos }) {
+    return (
+        <ul>
+            {todos.map((todo, index) => (
+                <li key={index}>{todo.text}</li>  // Bad: index as key
+            ))}
+        </ul>
+    );
+}
 ```
 
-## Styling
+## Performance Optimization
 
-### CSS Modules
-
-✅ **Good:**
-```tsx
-// UserCard.module.css
-.card {
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+### ✅ Good
+```typescript
+// React.memo for pure components
+interface UserCardProps {
+    user: User;
+    onSelect: (id: number) => void;
 }
 
-.title {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
+export const UserCard = React.memo<UserCardProps>(({ user, onSelect }) => {
+    return (
+        <div onClick={() => onSelect(user.id)}>
+            <h3>{user.name}</h3>
+            <p>{user.email}</p>
+        </div>
+    );
+});
 
-// UserCard.tsx
-import styles from './UserCard.module.css';
+// Lazy loading components
+const Dashboard = React.lazy(() => import('./Dashboard'));
+const Settings = React.lazy(() => import('./Settings'));
 
-export const UserCard: React.FC<UserCardProps> = ({ user }) => {
-  return (
-    <div className={styles.card}>
-      <h3 className={styles.title}>{user.name}</h3>
-      <p>{user.email}</p>
-    </div>
-  );
+const App: React.FC = () => (
+    <Suspense fallback={<Spinner />}>
+        <Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/settings" element={<Settings />} />
+        </Routes>
+    </Suspense>
+);
+
+// Virtualization for long lists
+import { FixedSizeList } from 'react-window';
+
+const LargeList: React.FC<{ items: Item[] }> = ({ items }) => (
+    <FixedSizeList
+        height={600}
+        width="100%"
+        itemCount={items.length}
+        itemSize={50}
+    >
+        {({ index, style }) => (
+            <div style={style}>
+                {items[index].name}
+            </div>
+        )}
+    </FixedSizeList>
+);
+```
+
+## Forms
+
+### ✅ Good
+```typescript
+// Controlled form with validation
+const RegistrationForm: React.FC = () => {
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        confirmPassword: ''
+    });
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    };
+    
+    const validate = (): boolean => {
+        const newErrors: Record<string, string> = {};
+        
+        if (!formData.email.includes('@')) {
+            newErrors.email = 'Invalid email address';
+        }
+        
+        if (formData.password.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters';
+        }
+        
+        if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match';
+        }
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!validate()) {
+            return;
+        }
+        
+        try {
+            await register(formData);
+        } catch (error) {
+            setErrors({ form: 'Registration failed' });
+        }
+    };
+    
+    return (
+        <form onSubmit={handleSubmit}>
+            <div>
+                <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    aria-invalid={!!errors.email}
+                />
+                {errors.email && <span className="error">{errors.email}</span>}
+            </div>
+            <div>
+                <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    aria-invalid={!!errors.password}
+                />
+                {errors.password && <span className="error">{errors.password}</span>}
+            </div>
+            <button type="submit">Register</button>
+        </form>
+    );
 };
 ```
 
 ## Testing
 
-✅ **Good:**
-```tsx
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+### ✅ Good
+```typescript
+// UserProfile.test.tsx
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { UserProfile } from './UserProfile';
+import { fetchUser } from '../api/userApi';
+
+jest.mock('../api/userApi');
 
 describe('UserProfile', () => {
-  it('renders user information', () => {
-    const user = { id: 1, name: 'John Doe', email: 'john@example.com' };
-    
-    render(<UserProfile user={user} />);
-    
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('john@example.com')).toBeInTheDocument();
-  });
-
-  it('calls onEdit when edit button is clicked', () => {
-    const user = { id: 1, name: 'John Doe', email: 'john@example.com' };
-    const onEdit = jest.fn();
-    
-    render(<UserProfile user={user} onEdit={onEdit} />);
-    
-    fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-    
-    expect(onEdit).toHaveBeenCalledTimes(1);
-  });
-
-  it('displays loading state while fetching', async () => {
-    render(<UserProfile userId={1} />);
-    
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
-    
-    await waitFor(() => {
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+    it('displays loading state initially', () => {
+        render(<UserProfile userId={1} />);
+        expect(screen.getByText(/loading/i)).toBeInTheDocument();
     });
-  });
+    
+    it('displays user data when loaded', async () => {
+        const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+        (fetchUser as jest.Mock).mockResolvedValue(mockUser);
+        
+        render(<UserProfile userId={1} />);
+        
+        await waitFor(() => {
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+        });
+        
+        expect(screen.getByText('john@example.com')).toBeInTheDocument();
+    });
+    
+    it('displays error message when fetch fails', async () => {
+        (fetchUser as jest.Mock).mockRejectedValue(new Error('Network error'));
+        
+        render(<UserProfile userId={1} />);
+        
+        await waitFor(() => {
+            expect(screen.getByText(/failed to load user/i)).toBeInTheDocument();
+        });
+    });
+    
+    it('calls onUpdate when update button is clicked', async () => {
+        const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+        const mockOnUpdate = jest.fn();
+        (fetchUser as jest.Mock).mockResolvedValue(mockUser);
+        
+        render(<UserProfile userId={1} onUpdate={mockOnUpdate} />);
+        
+        await waitFor(() => {
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+        });
+        
+        const updateButton = screen.getByRole('button', { name: /update/i });
+        await userEvent.click(updateButton);
+        
+        expect(mockOnUpdate).toHaveBeenCalledWith(mockUser);
+    });
 });
 ```
 
-## Accessibility
+## Summary
 
-✅ **Good:**
-```tsx
-export const AccessibleForm: React.FC = () => {
-  const [name, setName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="name">
-        Name:
-        <input
-          id="name"
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          aria-required="true"
-        />
-      </label>
-
-      <label htmlFor="email">
-        Email:
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          aria-required="true"
-          aria-describedby="email-help"
-        />
-      </label>
-      <span id="email-help">We'll never share your email</span>
-
-      <button type="submit" aria-label="Submit form">
-        Submit
-      </button>
-    </form>
-  );
-};
-```
+- Use functional components with hooks
+- Define explicit TypeScript types for props
+- Extract complex logic into custom hooks
+- Use Context API for global state
+- Implement proper error boundaries
+- Optimize performance with React.memo, useMemo, useCallback
+- Write accessible, semantic HTML
+- Test user interactions, not implementation details

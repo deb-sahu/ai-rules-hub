@@ -1,590 +1,531 @@
 # TypeScript Style Guide
 
+This style guide provides concrete examples and best practices for writing clean, type-safe TypeScript code.
+
 ## Table of Contents
+- [Type Safety](#type-safety)
 - [Naming Conventions](#naming-conventions)
-- [Type System](#type-system)
-- [Code Organization](#code-organization)
-- [Best Practices](#best-practices)
+- [Interfaces and Types](#interfaces-and-types)
+- [Functions](#functions)
 - [Async/Await](#asyncawait)
 - [Error Handling](#error-handling)
-- [Testing](#testing)
+- [Modern JavaScript Features](#modern-javascript-features)
+
+## Type Safety
+
+### ✅ Good
+```typescript
+// Explicit types for function parameters and return values
+function calculateTotal(price: number, quantity: number): number {
+    return price * quantity;
+}
+
+// Using interfaces for object shapes
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    age?: number;  // Optional property
+}
+
+function createUser(name: string, email: string): User {
+    return {
+        id: Date.now(),
+        name,
+        email
+    };
+}
+
+// Using unknown instead of any
+function processData(data: unknown): string {
+    if (typeof data === 'string') {
+        return data.toUpperCase();
+    }
+    if (typeof data === 'number') {
+        return data.toString();
+    }
+    throw new Error('Unsupported data type');
+}
+
+// Strict null checking
+function getUserName(user: User | null): string {
+    return user?.name ?? 'Guest';
+}
+```
+
+### ❌ Bad
+```typescript
+// Missing types
+function calculateTotal(price, quantity) {  // Bad: implicit any
+    return price * quantity;
+}
+
+// Using any unnecessarily
+function processData(data: any): string {  // Bad: use unknown instead
+    return data.toUpperCase();
+}
+
+// Not handling null/undefined
+function getUserName(user: User): string {
+    return user.name;  // Bad: user might be null
+}
+```
 
 ## Naming Conventions
 
-### Classes, Interfaces, and Types
-
-✅ **Good:**
+### ✅ Good
 ```typescript
+// Interfaces and types use PascalCase
+interface UserProfile {
+    firstName: string;
+    lastName: string;
+}
+
+type UserStatus = 'active' | 'inactive' | 'pending';
+
+// Classes use PascalCase
 class UserService {
-  // Implementation
+    private readonly apiUrl: string;
+    
+    constructor(apiUrl: string) {
+        this.apiUrl = apiUrl;
+    }
+    
+    async getUser(id: number): Promise<User> {
+        // Method implementation
+    }
 }
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
-type UserRole = 'admin' | 'user' | 'guest';
-
-enum UserStatus {
-  Active,
-  Inactive,
-  Pending
-}
-```
-
-❌ **Bad:**
-```typescript
-class userService { }  // Should be PascalCase
-
-interface IUser { }  // Don't use 'I' prefix in TypeScript
-
-type userRole = 'admin' | 'user';  // Should be PascalCase
-
-enum userStatus {  // Should be PascalCase
-  active,  // Should be PascalCase
-  inactive
-}
-```
-
-### Variables and Functions
-
-✅ **Good:**
-```typescript
-const MAX_RETRIES = 3;
-const API_ENDPOINT = 'https://api.example.com';
-
+// Variables and functions use camelCase
 const userName = 'John Doe';
-let userCount = 0;
+const isActive = true;
 
-function getUserById(id: number): User | null {
-  // Implementation
+function calculateAge(birthDate: Date): number {
+    // Implementation
 }
 
-const calculateTotal = (items: Item[]): number => {
-  return items.reduce((sum, item) => sum + item.price, 0);
-};
+// Constants use UPPER_SNAKE_CASE
+const MAX_RETRY_ATTEMPTS = 3;
+const API_BASE_URL = 'https://api.example.com';
 ```
 
-❌ **Bad:**
+### ❌ Bad
 ```typescript
-const maxRetries = 3;  // Constants should be UPPER_SNAKE_CASE
-var UserName = 'John';  // Don't use var, should be camelCase
-
-function GetUserById(id) {  // Should be camelCase, missing types
-  // Implementation
+// Inconsistent naming
+interface user_profile {  // Bad: should be PascalCase
+    FirstName: string;  // Bad: should be camelCase
 }
+
+const UserName = 'John';  // Bad: variables should be camelCase
+const max_retry = 3;  // Bad: constants should be UPPER_SNAKE_CASE
 ```
 
-## Type System
+## Interfaces and Types
 
-### Type Annotations
-
-✅ **Good:**
+### ✅ Good
 ```typescript
+// Use type for unions and intersections
+type Status = 'pending' | 'approved' | 'rejected';
+type Result = Success | Failure;
+
+interface Success {
+    status: 'success';
+    data: unknown;
+}
+
+interface Failure {
+    status: 'error';
+    error: Error;
+}
+
+// Use interface for object shapes
 interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: UserRole;
-  createdAt: Date;
+    id: number;
+    name: string;
+    email: string;
 }
 
-function createUser(
-  name: string,
-  email: string,
-  role: UserRole = 'user'
-): User {
-  return {
-    id: generateId(),
-    name,
-    email,
-    role,
-    createdAt: new Date()
-  };
+// Extend interfaces
+interface Employee extends User {
+    employeeId: string;
+    department: string;
 }
 
-const users: User[] = [];
-const userMap: Map<number, User> = new Map();
-const userRecord: Record<string, User> = {};
-```
+// Utility types
+type PartialUser = Partial<User>;  // All properties optional
+type ReadonlyUser = Readonly<User>;  // All properties readonly
+type UserWithoutEmail = Omit<User, 'email'>;  // Exclude email
+type UserIdAndName = Pick<User, 'id' | 'name'>;  // Pick specific properties
 
-❌ **Bad:**
-```typescript
-function createUser(name, email, role) {  // Missing types
-  return {
-    id: generateId(),
-    name,
-    email,
-    role,
-    createdAt: new Date()
-  };
+// Generic types
+interface ApiResponse<T> {
+    data: T;
+    status: number;
+    message: string;
 }
 
-const users = [];  // Should explicitly type as User[]
-const userMap = new Map();  // Missing type parameters
-```
-
-### Union Types and Type Guards
-
-✅ **Good:**
-```typescript
-type Result<T> = 
-  | { success: true; data: T }
-  | { success: false; error: string };
-
-function isSuccess<T>(result: Result<T>): result is { success: true; data: T } {
-  return result.success === true;
-}
-
-function processResult<T>(result: Result<T>): T {
-  if (isSuccess(result)) {
-    return result.data;  // TypeScript knows this is success case
-  }
-  throw new Error(result.error);
-}
-
-// Using 'in' operator for type guards
-type Dog = { bark: () => void };
-type Cat = { meow: () => void };
-
-function makeSound(animal: Dog | Cat): void {
-  if ('bark' in animal) {
-    animal.bark();
-  } else {
-    animal.meow();
-  }
-}
-```
-
-### Generics
-
-✅ **Good:**
-```typescript
-interface Repository<T> {
-  getById(id: number): Promise<T | null>;
-  getAll(): Promise<T[]>;
-  create(entity: T): Promise<T>;
-  update(id: number, entity: Partial<T>): Promise<T>;
-  delete(id: number): Promise<void>;
-}
-
-class UserRepository implements Repository<User> {
-  async getById(id: number): Promise<User | null> {
+function fetchUser(id: number): Promise<ApiResponse<User>> {
     // Implementation
-  }
-  
-  async getAll(): Promise<User[]> {
-    // Implementation
-  }
-  
-  // ... other methods
-}
-
-// Generic with constraints
-function sortByProperty<T, K extends keyof T>(
-  items: T[],
-  key: K
-): T[] {
-  return items.sort((a, b) => {
-    if (a[key] < b[key]) return -1;
-    if (a[key] > b[key]) return 1;
-    return 0;
-  });
 }
 ```
 
-### Utility Types
-
-✅ **Good:**
+### ❌ Bad
 ```typescript
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
-  role: UserRole;
+// Using interface for simple unions
+interface Status {  // Bad: use type for unions
+    status: 'pending' | 'approved' | 'rejected';
 }
 
-// Partial - make all properties optional
-type UserUpdate = Partial<User>;
-
-// Omit - exclude properties
-type UserPublic = Omit<User, 'password'>;
-
-// Pick - select specific properties
-type UserCredentials = Pick<User, 'email' | 'password'>;
-
-// Required - make all properties required
-type UserRequired = Required<User>;
-
-// Record - key-value mapping
-type UserRolePermissions = Record<UserRole, string[]>;
-
-// Example usage
-const permissions: UserRolePermissions = {
-  admin: ['read', 'write', 'delete'],
-  user: ['read', 'write'],
-  guest: ['read']
-};
-```
-
-## Code Organization
-
-### File Structure
-
-✅ **Good:**
-```typescript
-// types.ts
-export interface User {
-  id: number;
-  name: string;
-  email: string;
+// Duplicating shapes instead of extending
+interface Employee {  // Bad: duplicates User properties
+    id: number;
+    name: string;
+    email: string;
+    employeeId: string;
 }
-
-export type UserRole = 'admin' | 'user' | 'guest';
-
-// constants.ts
-export const MAX_LOGIN_ATTEMPTS = 3;
-export const SESSION_TIMEOUT = 3600000; // 1 hour in ms
-
-// userService.ts
-import { User, UserRole } from './types';
-import { MAX_LOGIN_ATTEMPTS } from './constants';
-
-export class UserService {
-  private users: User[] = [];
-
-  async getUserById(id: number): Promise<User | null> {
-    // Implementation
-  }
-
-  async createUser(name: string, email: string): Promise<User> {
-    // Implementation
-  }
-}
-
-// index.ts
-export { User, UserRole } from './types';
-export { UserService } from './userService';
-export * from './constants';
 ```
 
-### Import Organization
+## Functions
 
-✅ **Good:**
+### ✅ Good
 ```typescript
-// External dependencies first
-import { Request, Response } from 'express';
-import { Logger } from 'winston';
-
-// Internal dependencies
-import { UserService } from '@/services/userService';
-import { validateEmail } from '@/utils/validation';
-
-// Types
-import type { User, UserRole } from '@/types';
-```
-
-## Best Practices
-
-### Immutability
-
-✅ **Good:**
-```typescript
-// Use const for variables that won't be reassigned
-const users: readonly User[] = [
-  { id: 1, name: 'John' },
-  { id: 2, name: 'Jane' }
-];
-
-// Use readonly for object properties
-interface Config {
-  readonly apiUrl: string;
-  readonly timeout: number;
-}
-
-// Use as const for literal types
-const ROLES = {
-  ADMIN: 'admin',
-  USER: 'user',
-  GUEST: 'guest'
-} as const;
-
-type Role = typeof ROLES[keyof typeof ROLES];
-
-// Array operations that don't mutate
-const addUser = (users: User[], newUser: User): User[] => {
-  return [...users, newUser];
-};
-
-const updateUser = (users: User[], id: number, updates: Partial<User>): User[] => {
-  return users.map(user => 
-    user.id === id ? { ...user, ...updates } : user
-  );
-};
-```
-
-❌ **Bad:**
-```typescript
-let users = [];  // Should use const
-users.push(newUser);  // Mutating array
-
-const config = {
-  apiUrl: 'https://api.example.com'
-};
-config.apiUrl = 'https://new-api.example.com';  // Should be readonly
-```
-
-### Function Design
-
-✅ **Good:**
-```typescript
-// Clear function signature with types
-function calculateDiscount(
-  price: number,
-  discountPercent: number = 0
-): number {
-  if (price < 0 || discountPercent < 0 || discountPercent > 100) {
-    throw new Error('Invalid input parameters');
-  }
-  return price * (1 - discountPercent / 100);
-}
-
-// Arrow function for callbacks
+// Arrow functions for callbacks
 const numbers = [1, 2, 3, 4, 5];
 const doubled = numbers.map(n => n * 2);
 const evens = numbers.filter(n => n % 2 === 0);
 
-// Use optional parameters
-function greetUser(name: string, title?: string): string {
-  return title ? `Hello, ${title} ${name}` : `Hello, ${name}`;
+// Type-safe function declarations
+function add(a: number, b: number): number {
+    return a + b;
 }
 
-// Use rest parameters
-function sum(...numbers: number[]): number {
-  return numbers.reduce((total, n) => total + n, 0);
+// Optional and default parameters
+function greet(name: string, title?: string): string {
+    return title ? `Hello, ${title} ${name}` : `Hello, ${name}`;
 }
+
+function createUser(name: string, role: string = 'user'): User {
+    return { id: Date.now(), name, role };
+}
+
+// Rest parameters
+function sum(...numbers: number[]): number {
+    return numbers.reduce((total, n) => total + n, 0);
+}
+
+// Function overloads
+function process(value: string): string;
+function process(value: number): number;
+function process(value: string | number): string | number {
+    if (typeof value === 'string') {
+        return value.toUpperCase();
+    }
+    return value * 2;
+}
+
+// Generic functions
+function identity<T>(value: T): T {
+    return value;
+}
+
+function firstElement<T>(arr: T[]): T | undefined {
+    return arr[0];
+}
+```
+
+### ❌ Bad
+```typescript
+// Missing return type
+function add(a: number, b: number) {  // Bad: implicit return type
+    return a + b;
+}
+
+// Using regular function where arrow function is clearer
+const doubled = numbers.map(function(n) {  // Bad: verbose
+    return n * 2;
+});
 ```
 
 ## Async/Await
 
-✅ **Good:**
+### ✅ Good
 ```typescript
-async function fetchUserData(userId: number): Promise<User> {
-  try {
-    const response = await fetch(`/api/users/${userId}`);
+// Async function with proper error handling
+async function fetchUser(id: number): Promise<User | null> {
+    try {
+        const response = await fetch(`/api/users/${id}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const user = await response.json();
+        return user;
+    } catch (error) {
+        console.error('Failed to fetch user:', error);
+        return null;
+    }
+}
+
+// Parallel execution with Promise.all
+async function fetchAllUsers(ids: number[]): Promise<User[]> {
+    const promises = ids.map(id => fetchUser(id));
+    const users = await Promise.all(promises);
+    return users.filter((user): user is User => user !== null);
+}
+
+// Using async/await with retry logic
+async function fetchWithRetry<T>(
+    fn: () => Promise<T>,
+    maxRetries: number = 3
+): Promise<T> {
+    let lastError: Error;
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await fn();
+        } catch (error) {
+            lastError = error as Error;
+            if (i < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+            }
+        }
     }
     
-    const user: User = await response.json();
-    return user;
-  } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw error;
-  }
-}
-
-// Parallel operations with Promise.all
-async function fetchMultipleUsers(userIds: number[]): Promise<User[]> {
-  const promises = userIds.map(id => fetchUserData(id));
-  return Promise.all(promises);
-}
-
-// Sequential operations when needed
-async function processUserWorkflow(userId: number): Promise<void> {
-  const user = await fetchUserData(userId);
-  const preferences = await fetchUserPreferences(userId);
-  await updateUserSettings(user, preferences);
+    throw lastError!;
 }
 ```
 
-❌ **Bad:**
+### ❌ Bad
 ```typescript
-function fetchUserData(userId: number): Promise<User> {
-  return fetch(`/api/users/${userId}`)
-    .then(response => response.json())
-    .then(user => {
-      return user;
-    })
-    .catch(error => {
-      console.error(error);
-      throw error;
-    });
+// Using .then() instead of async/await
+function fetchUser(id: number): Promise<User> {
+    return fetch(`/api/users/${id}`)
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => {
+            console.error(error);
+            throw error;
+        });
 }
 
-// Don't mix async/await with .then()
-async function badExample() {
-  const user = await fetchUser().then(u => u);  // Don't do this
+// Not handling promise rejection
+async function processUsers() {
+    const users = await fetchUsers();  // Bad: no error handling
+    return users.map(u => u.name);
 }
 ```
 
 ## Error Handling
 
-✅ **Good:**
+### ✅ Good
 ```typescript
-// Custom error classes
+// Custom error types
 class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-  }
+    constructor(
+        message: string,
+        public field: string,
+        public value: unknown
+    ) {
+        super(message);
+        this.name = 'ValidationError';
+    }
 }
 
-class NotFoundError extends Error {
-  constructor(resource: string, id: number | string) {
-    super(`${resource} with id ${id} not found`);
-    this.name = 'NotFoundError';
-  }
+class ApiError extends Error {
+    constructor(
+        message: string,
+        public statusCode: number,
+        public response?: unknown
+    ) {
+        super(message);
+        this.name = 'ApiError';
+    }
+}
+
+// Type guard for errors
+function isApiError(error: unknown): error is ApiError {
+    return error instanceof ApiError;
 }
 
 // Proper error handling
-async function getUserById(id: number): Promise<User> {
-  if (id <= 0) {
-    throw new ValidationError('User ID must be positive');
-  }
-
-  try {
-    const response = await fetch(`/api/users/${id}`);
-    
-    if (response.status === 404) {
-      throw new NotFoundError('User', id);
+async function createUser(data: unknown): Promise<User> {
+    try {
+        // Validate input
+        if (!isValidUserData(data)) {
+            throw new ValidationError('Invalid user data', 'data', data);
+        }
+        
+        const response = await fetch('/api/users', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) {
+            throw new ApiError(
+                'Failed to create user',
+                response.status,
+                await response.json()
+            );
+        }
+        
+        return await response.json();
+    } catch (error) {
+        if (isApiError(error)) {
+            console.error(`API Error: ${error.statusCode} - ${error.message}`);
+        } else if (error instanceof ValidationError) {
+            console.error(`Validation Error on ${error.field}: ${error.message}`);
+        } else {
+            console.error('Unknown error:', error);
+        }
+        throw error;
     }
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    if (error instanceof ValidationError || error instanceof NotFoundError) {
-      throw error;
-    }
-    
-    // Log unexpected errors
-    console.error('Unexpected error fetching user:', error);
-    throw new Error('Failed to fetch user');
-  }
 }
 
-// Type-safe error handling
-function handleError(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return 'An unknown error occurred';
+// Result type pattern (alternative to exceptions)
+type Result<T, E = Error> = 
+    | { success: true; value: T }
+    | { success: false; error: E };
+
+async function fetchUserSafe(id: number): Promise<Result<User>> {
+    try {
+        const user = await fetchUser(id);
+        return { success: true, value: user };
+    } catch (error) {
+        return { success: false, error: error as Error };
+    }
 }
 ```
 
-## Testing
-
-✅ **Good:**
+### ❌ Bad
 ```typescript
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { UserService } from './userService';
+// Generic error handling without types
+async function createUser(data: any) {
+    try {
+        return await fetch('/api/users', { method: 'POST', body: data });
+    } catch (error) {  // Bad: error type is unknown
+        console.log(error.message);  // Bad: error might not have message
+    }
+}
 
-describe('UserService', () => {
-  let userService: UserService;
-
-  beforeEach(() => {
-    userService = new UserService();
-  });
-
-  describe('getUserById', () => {
-    it('should return user when user exists', async () => {
-      // Arrange
-      const userId = 1;
-      const expectedUser: User = {
-        id: userId,
-        name: 'John Doe',
-        email: 'john@example.com'
-      };
-
-      // Act
-      const result = await userService.getUserById(userId);
-
-      // Assert
-      expect(result).toEqual(expectedUser);
-    });
-
-    it('should return null when user does not exist', async () => {
-      // Arrange
-      const userId = 999;
-
-      // Act
-      const result = await userService.getUserById(userId);
-
-      // Assert
-      expect(result).toBeNull();
-    });
-
-    it('should throw ValidationError for invalid user ID', async () => {
-      // Arrange
-      const invalidUserId = -1;
-
-      // Act & Assert
-      await expect(
-        userService.getUserById(invalidUserId)
-      ).rejects.toThrow(ValidationError);
-    });
-  });
-
-  describe('createUser', () => {
-    it('should create and return new user', async () => {
-      // Arrange
-      const name = 'Jane Doe';
-      const email = 'jane@example.com';
-
-      // Act
-      const result = await userService.createUser(name, email);
-
-      // Assert
-      expect(result).toMatchObject({
-        name,
-        email
-      });
-      expect(result.id).toBeDefined();
-    });
-  });
-});
+// Swallowing errors
+async function processData() {
+    try {
+        await someOperation();
+    } catch (error) {
+        // Bad: empty catch block
+    }
+}
 ```
 
-## Documentation
+## Modern JavaScript Features
 
-✅ **Good:**
+### ✅ Good
 ```typescript
-/**
- * Retrieves a user by their unique identifier.
- * 
- * @param id - The unique identifier of the user
- * @returns A promise that resolves to the user if found, or null otherwise
- * @throws {ValidationError} If the user ID is invalid
- * @throws {Error} If there's a network or server error
- * 
- * @example
- * ```typescript
- * const user = await getUserById(123);
- * if (user) {
- *   console.log(user.name);
- * }
- * ```
- */
-async function getUserById(id: number): Promise<User | null> {
-  // Implementation
+// Destructuring
+const user = { id: 1, name: 'John', email: 'john@example.com' };
+const { id, name } = user;
+
+// Array destructuring
+const [first, second, ...rest] = [1, 2, 3, 4, 5];
+
+// Spread operator
+const newUser = { ...user, age: 30 };
+const allNumbers = [...numbers, 6, 7, 8];
+
+// Optional chaining
+const city = user?.address?.city;
+const firstItem = items?.[0];
+const result = getFunction?.();
+
+// Nullish coalescing
+const displayName = user.name ?? 'Anonymous';
+const port = config.port ?? 3000;
+
+// Template literals
+const greeting = `Hello, ${name}!`;
+const multiLine = `
+    This is a
+    multi-line string
+`;
+
+// Object shorthand
+const name = 'John';
+const age = 30;
+const person = { name, age };  // Same as { name: name, age: age }
+
+// Computed property names
+const propName = 'score';
+const obj = {
+    [propName]: 100,
+    [`${propName}Total`]: 500
+};
+```
+
+### ❌ Bad
+```typescript
+// Not using destructuring
+const id = user.id;
+const name = user.name;
+const email = user.email;
+
+// Manual null checking instead of optional chaining
+const city = user && user.address && user.address.city;
+
+// Using || instead of ??
+const port = config.port || 3000;  // Bad: 0 is falsy but valid
+```
+
+## Type Guards
+
+### ✅ Good
+```typescript
+// Type predicates
+function isString(value: unknown): value is string {
+    return typeof value === 'string';
 }
 
-/**
- * Configuration options for the API client.
- */
-interface ApiConfig {
-  /** Base URL for API requests */
-  baseUrl: string;
-  /** Request timeout in milliseconds */
-  timeout: number;
-  /** API authentication token */
-  token?: string;
+function isUser(value: unknown): value is User {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'id' in value &&
+        'name' in value &&
+        'email' in value
+    );
+}
+
+// Using type guards
+function processValue(value: string | number): string {
+    if (typeof value === 'string') {
+        return value.toUpperCase();
+    }
+    return value.toFixed(2);
+}
+
+// Discriminated unions
+type Shape =
+    | { kind: 'circle'; radius: number }
+    | { kind: 'square'; size: number }
+    | { kind: 'rectangle'; width: number; height: number };
+
+function calculateArea(shape: Shape): number {
+    switch (shape.kind) {
+        case 'circle':
+            return Math.PI * shape.radius ** 2;
+        case 'square':
+            return shape.size ** 2;
+        case 'rectangle':
+            return shape.width * shape.height;
+    }
 }
 ```
+
+## Summary
+
+- Always use explicit types for parameters and return values
+- Use `unknown` instead of `any` when type is truly unknown
+- Prefer `type` for unions, `interface` for object shapes
+- Use modern JavaScript features (destructuring, spread, optional chaining)
+- Implement proper error handling with custom error types
+- Use async/await for asynchronous operations
+- Leverage utility types (Partial, Pick, Omit, etc.)
+- Write type-safe code with type guards and discriminated unions

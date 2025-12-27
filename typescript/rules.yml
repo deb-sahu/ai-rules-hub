@@ -1,112 +1,122 @@
+# TypeScript AI Coding Standards
+
 version: "1.0.0"
-language: "TypeScript"
-target: "ES2020+"
+language: "typescript"
 
-naming_conventions:
-  classes:
-    - rule: "Use PascalCase for class names"
-      example: "class UserService { }"
-  interfaces:
-    - rule: "Use PascalCase for interface names (no 'I' prefix)"
-      example: "interface User { }"
-  types:
-    - rule: "Use PascalCase for type aliases"
-      example: "type UserRole = 'admin' | 'user';"
-  functions:
-    - rule: "Use camelCase for function names"
-      example: "function getUserById(id: number) { }"
-  variables:
-    - rule: "Use camelCase for variables"
-      example: "const userName = 'John';"
-  constants:
+rules:
+  naming_conventions:
+    - rule: "Use PascalCase for types, interfaces, classes, and enums"
+      priority: "high"
+      example: "interface UserProfile { } class UserService { }"
+    
+    - rule: "Use camelCase for variables, functions, and methods"
+      priority: "high"
+      example: "const userName = 'John'; function getUserById(id: number)"
+    
     - rule: "Use UPPER_SNAKE_CASE for constants"
-      example: "const MAX_RETRIES = 3;"
-  enums:
-    - rule: "Use PascalCase for enum names and members"
-      example: "enum UserStatus { Active, Inactive }"
+      priority: "medium"
+      example: "const MAX_RETRY_COUNT = 3;"
+    
+    - rule: "Prefix interfaces with 'I' only when necessary for clarity"
+      priority: "low"
+      example: "interface User { } or interface IUserRepository { }"
 
-code_organization:
-  file_structure:
-    - "One main export per file"
-    - "Group related types and interfaces"
-    - "Use index files for clean exports"
-  imports:
-    - "Use absolute imports with path aliases"
-    - "Group imports: external, internal, types"
-    - "Remove unused imports"
-  module_structure:
-    - "Interfaces and types at the top"
-    - "Constants after types"
-    - "Functions and classes after constants"
-    - "Default export at the bottom"
-
-best_practices:
   type_safety:
-    - "Always use explicit types for function parameters and return values"
-    - "Avoid 'any' type - use 'unknown' if needed"
-    - "Use strict mode in tsconfig.json"
-    - "Leverage union types and discriminated unions"
-  async_await:
-    - "Use async/await over raw Promises"
-    - "Handle promise rejections properly"
-    - "Use Promise.all() for parallel operations"
+    - rule: "Always define explicit types for function parameters and return values"
+      priority: "high"
+      example: "function getUser(id: number): Promise<User | null>"
+    
+    - rule: "Avoid using 'any' type, use 'unknown' when type is truly unknown"
+      priority: "high"
+      example: "function processData(data: unknown): void"
+    
+    - rule: "Use strict null checks and handle undefined/null cases"
+      priority: "high"
+      example: "const userName: string | null = user?.name ?? null;"
+    
+    - rule: "Prefer type over interface for unions and intersections"
+      priority: "medium"
+      example: "type Status = 'active' | 'inactive' | 'pending';"
+
+  code_organization:
+    - rule: "One export per file for major components/classes"
+      priority: "medium"
+      
+    - rule: "Group imports: external libraries, internal modules, types"
+      priority: "medium"
+      
+    - rule: "Use barrel exports (index.ts) for cleaner imports"
+      priority: "low"
+
+  best_practices:
+    - rule: "Use async/await instead of raw promises"
+      priority: "high"
+      example: "const user = await fetchUser(id);"
+    
+    - rule: "Prefer const over let, avoid var completely"
+      priority: "high"
+      example: "const userName = 'John';"
+    
+    - rule: "Use optional chaining and nullish coalescing"
+      priority: "medium"
+      example: "const city = user?.address?.city ?? 'Unknown';"
+    
+    - rule: "Destructure objects and arrays when accessing multiple properties"
+      priority: "medium"
+      example: "const { firstName, lastName } = user;"
+    
+    - rule: "Use arrow functions for callbacks and functional programming"
+      priority: "medium"
+      example: "users.map(user => user.name)"
+
   error_handling:
-    - "Use custom error classes"
-    - "Always type catch blocks as unknown"
-    - "Provide meaningful error messages"
-  immutability:
-    - "Prefer const over let"
-    - "Never use var"
-    - "Use readonly for object properties when applicable"
-    - "Use as const for literal types"
-  functions:
-    - "Use arrow functions for callbacks"
-    - "Use function declarations for named functions"
-    - "Keep functions small and focused"
-    - "Use default parameters instead of conditionals"
+    - rule: "Always handle promise rejections"
+      priority: "high"
+      example: "try { await fetchData(); } catch (error) { handleError(error); }"
+    
+    - rule: "Create custom error types for domain-specific errors"
+      priority: "medium"
+      example: "class ValidationError extends Error { }"
+    
+    - rule: "Use type guards to narrow error types"
+      priority: "medium"
+      example: "if (error instanceof ValidationError) { }"
 
-typescript_specific:
-  generics:
-    - "Use meaningful generic names (T, K, V for simple cases)"
-    - "Constrain generics when possible"
-    - "Use generic utilities (Partial, Pick, Omit, etc.)"
-  utility_types:
-    - "Partial<T> for optional properties"
-    - "Required<T> for required properties"
-    - "Pick<T, K> to select properties"
-    - "Omit<T, K> to exclude properties"
-    - "Record<K, T> for key-value objects"
-  type_guards:
-    - "Use type guards for runtime type checking"
-    - "Create custom type guard functions"
-    - "Use 'in' operator for property checks"
-  decorators:
-    - "Use decorators judiciously"
-    - "Enable experimentalDecorators in tsconfig"
+  testing:
+    - rule: "Write unit tests using Jest, Vitest, or Mocha"
+      priority: "high"
+      
+    - rule: "Mock external dependencies in tests"
+      priority: "high"
+      
+    - rule: "Use descriptive test names with 'should' or 'it' patterns"
+      priority: "medium"
+      example: "it('should return user when ID exists')"
 
-security:
-  - "Validate and sanitize all user inputs"
-  - "Use environment variables for sensitive data"
-  - "Avoid eval() and Function constructor"
-  - "Use proper CORS configuration"
-  - "Implement rate limiting for APIs"
+  performance:
+    - rule: "Avoid unnecessary type assertions"
+      priority: "medium"
+      
+    - rule: "Use lazy loading for large modules"
+      priority: "medium"
+      example: "const module = await import('./heavy-module');"
+    
+    - rule: "Memoize expensive computations"
+      priority: "low"
 
-performance:
-  - "Use lazy loading for large modules"
-  - "Implement memoization for expensive operations"
-  - "Use web workers for CPU-intensive tasks"
-  - "Optimize bundle size with tree shaking"
-  - "Use async imports for code splitting"
+  security:
+    - rule: "Sanitize user input before processing"
+      priority: "critical"
+      
+    - rule: "Use environment variables for sensitive configuration"
+      priority: "critical"
+      
+    - rule: "Avoid eval() and Function() constructor"
+      priority: "critical"
 
-testing:
-  - "Write tests using Jest or Vitest"
-  - "Use describe/it for test structure"
-  - "Mock external dependencies"
-  - "Test edge cases and error scenarios"
-  - "Aim for high code coverage"
-
-documentation:
-  - "Use JSDoc comments for public APIs"
-  - "Document complex type definitions"
-  - "Keep inline comments minimal and meaningful"
-  - "Use clear, self-documenting names"
+ai_completion_hints:
+  - "Suggest appropriate generics for reusable functions"
+  - "Recommend utility types (Pick, Omit, Partial, Required)"
+  - "Provide JSDoc comments for complex functions"
+  - "Suggest appropriate design patterns"
+  - "Recommend type narrowing techniques"

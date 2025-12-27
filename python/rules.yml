@@ -1,114 +1,214 @@
+# Python AI Coding Standards
+
 version: "1.0.0"
-language: "Python"
-target: "Python 3.8+"
+language: "python"
 
-naming_conventions:
-  modules:
-    - rule: "Use lowercase with underscores"
-      example: "user_service.py, data_utils.py"
-  classes:
+rules:
+  naming_conventions:
+    - rule: "Use snake_case for function names and variable names"
+      priority: "high"
+      example: "def get_user_data(user_id): user_name = 'John'"
+    
     - rule: "Use PascalCase for class names"
-      example: "class UserService:"
-  functions:
-    - rule: "Use lowercase with underscores"
-      example: "def get_user_by_id():"
-  variables:
-    - rule: "Use lowercase with underscores"
-      example: "user_name = 'John'"
-  constants:
-    - rule: "Use UPPERCASE with underscores"
-      example: "MAX_RETRIES = 3"
-  private:
-    - rule: "Use leading underscore for private methods/attributes"
-      example: "_internal_method(), _private_var"
+      priority: "high"
+      example: "class UserProfile: pass"
+    
+    - rule: "Use UPPER_SNAKE_CASE for constants"
+      priority: "high"
+      example: "MAX_CONNECTIONS = 100"
+    
+    - rule: "Prefix private methods and attributes with single underscore"
+      priority: "high"
+      example: "def _internal_method(self): self._private_attr = value"
+    
+    - rule: "Use descriptive names, avoid single letters except in loops"
+      priority: "high"
+      example: "for index in range(10): or for item in items:"
 
-code_organization:
-  imports:
-    - "Standard library imports first"
-    - "Third-party imports second"
-    - "Local application imports third"
-    - "Separate groups with blank line"
-    - "Use absolute imports over relative"
-  module_structure:
-    - "Module docstring at top"
-    - "Imports"
-    - "Constants"
-    - "Exception classes"
-    - "Other classes"
-    - "Functions"
-    - "if __name__ == '__main__' block"
+  code_organization:
+    - rule: "Order imports: standard library, third-party, local modules"
+      priority: "high"
+      example: "import os\nimport sys\n\nimport requests\n\nfrom myapp import utils"
+    
+    - rule: "One class per module unless closely related"
+      priority: "medium"
+      
+    - rule: "Keep functions focused and single-purpose"
+      priority: "high"
+      
+    - rule: "Organize code into packages with __init__.py files"
+      priority: "medium"
 
-best_practices:
   type_hints:
-    - "Use type hints for function parameters and returns"
-    - "Use Optional for nullable values"
-    - "Use Union for multiple types"
-    - "Use TypedDict for structured dictionaries"
+    - rule: "Use type hints for function parameters and return values"
+      priority: "high"
+      example: "def get_user(user_id: int) -> User | None:"
+    
+    - rule: "Use Optional for nullable types"
+      priority: "high"
+      example: "from typing import Optional\ndef find_user(email: str) -> Optional[User]:"
+    
+    - rule: "Use List, Dict, Set from typing for collection types"
+      priority: "high"
+      example: "def process_items(items: List[str]) -> Dict[str, int]:"
+    
+    - rule: "Use Protocol or ABC for interface definitions"
+      priority: "medium"
+      example: "from typing import Protocol\nclass Drawable(Protocol): def draw(self) -> None: ..."
+
   docstrings:
-    - "Use docstrings for modules, classes, and functions"
-    - "Follow Google or NumPy style"
-    - "Include parameters, returns, and raises sections"
-  context_managers:
-    - "Use with statement for file operations"
-    - "Use with statement for locks and connections"
-    - "Create custom context managers when appropriate"
-  list_comprehensions:
-    - "Use list comprehensions for simple transformations"
-    - "Keep comprehensions readable (max 2 clauses)"
-    - "Use generator expressions for large datasets"
+    - rule: "Write docstrings for all public modules, classes, functions"
+      priority: "high"
+      example: "\"\"\"\n    Get user by ID.\n    \n    Args:\n        user_id: The unique user identifier\n    \n    Returns:\n        User object or None if not found\n    \"\"\""
+    
+    - rule: "Use Google or NumPy style for docstrings consistently"
+      priority: "medium"
+      
+    - rule: "Include parameter types and return types in docstrings"
+      priority: "medium"
+
+  best_practices:
+    - rule: "Use context managers (with statement) for resource management"
+      priority: "high"
+      example: "with open('file.txt', 'r') as f: content = f.read()"
+    
+    - rule: "Prefer list comprehensions over map/filter for simple operations"
+      priority: "medium"
+      example: "squared = [x**2 for x in numbers if x > 0]"
+    
+    - rule: "Use f-strings for string formatting"
+      priority: "high"
+      example: "message = f'Hello, {name}! You have {count} messages.'"
+    
+    - rule: "Use enumerate() for index and value in loops"
+      priority: "medium"
+      example: "for index, item in enumerate(items):"
+    
+    - rule: "Use zip() for parallel iteration"
+      priority: "medium"
+      example: "for name, age in zip(names, ages):"
+    
+    - rule: "Prefer pathlib over os.path for file operations"
+      priority: "medium"
+      example: "from pathlib import Path\nfile_path = Path('data') / 'users.json'"
+
   error_handling:
-    - "Use specific exception types"
-    - "Don't catch generic Exception unless necessary"
-    - "Use finally for cleanup"
-    - "Create custom exceptions for domain errors"
+    - rule: "Use specific exception types, avoid bare except"
+      priority: "high"
+      example: "except ValueError as e: or except (TypeError, KeyError) as e:"
+    
+    - rule: "Log exceptions with context information"
+      priority: "high"
+      example: "logger.exception(f'Failed to process user {user_id}')"
+    
+    - rule: "Create custom exception classes for domain-specific errors"
+      priority: "medium"
+      example: "class ValidationError(Exception): pass"
+    
+    - rule: "Use finally for cleanup code"
+      priority: "high"
+      example: "try: ... except: ... finally: cleanup()"
 
-pythonic_patterns:
-  iterables:
-    - "Use enumerate() instead of range(len())"
-    - "Use zip() for parallel iteration"
-    - "Use itertools for complex iterations"
-  dictionaries:
-    - "Use get() with default values"
-    - "Use dict comprehensions"
-    - "Use defaultdict for automatic initialization"
-  strings:
-    - "Use f-strings for formatting"
-    - "Use str.join() for concatenation"
-    - "Use triple quotes for multi-line strings"
-  functions:
-    - "Use *args and **kwargs for flexible arguments"
-    - "Use keyword-only arguments for clarity"
-    - "Use default mutable arguments carefully"
+  data_structures:
+    - rule: "Use dataclasses for data containers"
+      priority: "medium"
+      example: "from dataclasses import dataclass\n@dataclass\nclass User: name: str\n    age: int"
+    
+    - rule: "Use NamedTuple for immutable data structures"
+      priority: "medium"
+      example: "from typing import NamedTuple\nclass Point(NamedTuple): x: int\n    y: int"
+    
+    - rule: "Use Enum for fixed set of constants"
+      priority: "medium"
+      example: "from enum import Enum\nclass Status(Enum): ACTIVE = 1\n    INACTIVE = 2"
 
-performance:
-  - "Use built-in functions and libraries"
-  - "Use list comprehensions over map/filter when readable"
-  - "Use generators for memory efficiency"
-  - "Profile code before optimizing"
-  - "Use appropriate data structures (set for membership tests)"
+  async_programming:
+    - rule: "Use async/await for I/O-bound operations"
+      priority: "high"
+      example: "async def fetch_data(url: str) -> dict: async with aiohttp.ClientSession() as session:"
+    
+    - rule: "Use asyncio.gather() for concurrent operations"
+      priority: "medium"
+      example: "results = await asyncio.gather(task1, task2, task3)"
+    
+    - rule: "Properly handle exceptions in async code"
+      priority: "high"
 
-async_programming:
-  - "Use async/await for I/O-bound operations"
-  - "Use asyncio.gather() for concurrent operations"
-  - "Don't mix sync and async code carelessly"
-  - "Use aiohttp for async HTTP requests"
+  testing:
+    - rule: "Write unit tests using pytest or unittest"
+      priority: "high"
+      
+    - rule: "Use fixtures for test setup and teardown"
+      priority: "high"
+      example: "@pytest.fixture\ndef user(): return User(name='Test')"
+    
+    - rule: "Use descriptive test function names"
+      priority: "medium"
+      example: "def test_get_user_returns_none_when_not_found():"
+    
+    - rule: "Use mocking for external dependencies"
+      priority: "high"
+      example: "from unittest.mock import Mock, patch"
+    
+    - rule: "Aim for high test coverage but focus on critical paths"
+      priority: "medium"
 
-testing:
-  - "Use pytest for testing"
-  - "Follow AAA pattern (Arrange, Act, Assert)"
-  - "Use fixtures for setup and teardown"
-  - "Mock external dependencies"
-  - "Use parametrize for multiple test cases"
+  performance:
+    - rule: "Use generators for large datasets to save memory"
+      priority: "medium"
+      example: "def read_large_file(file_path): for line in file: yield process(line)"
+    
+    - rule: "Use set for membership testing (O(1) vs O(n) for list)"
+      priority: "medium"
+      
+    - rule: "Use dictionary for lookups instead of nested loops"
+      priority: "medium"
+      
+    - rule: "Profile code before optimizing"
+      priority: "high"
 
-security:
-  - "Validate and sanitize user inputs"
-  - "Use environment variables for secrets"
-  - "Use parameterized queries for SQL"
-  - "Keep dependencies updated"
-  - "Use secrets module for cryptographic randomness"
+  security:
+    - rule: "Never store credentials in code, use environment variables"
+      priority: "critical"
+      example: "import os\napi_key = os.getenv('API_KEY')"
+    
+    - rule: "Validate and sanitize user input"
+      priority: "critical"
+      
+    - rule: "Use secrets module for cryptographically strong random numbers"
+      priority: "high"
+      example: "import secrets\ntoken = secrets.token_urlsafe(32)"
+    
+    - rule: "Avoid eval() and exec() with user input"
+      priority: "critical"
 
-documentation:
-  - "Write clear docstrings"
-  - "Use type hints"
-  - "Include examples in docstrings"
-  - "Keep comments up-to-date"
+  pep8_compliance:
+    - rule: "Limit lines to 88-100 characters (Black formatter standard)"
+      priority: "medium"
+      
+    - rule: "Use 4 spaces for indentation, never tabs"
+      priority: "high"
+      
+    - rule: "Use blank lines appropriately (2 before classes/functions, 1 within)"
+      priority: "low"
+      
+    - rule: "Use spaces around operators and after commas"
+      priority: "medium"
+
+  dependencies:
+    - rule: "Use virtual environments (venv, virtualenv, conda)"
+      priority: "high"
+      
+    - rule: "Pin dependencies with version numbers in requirements.txt"
+      priority: "high"
+      example: "requests==2.31.0"
+    
+    - rule: "Use requirements.txt for production, requirements-dev.txt for development"
+      priority: "medium"
+
+ai_completion_hints:
+  - "Suggest appropriate standard library modules"
+  - "Recommend Pythonic idioms and patterns"
+  - "Provide type hints for better code completion"
+  - "Suggest appropriate exception handling"
+  - "Recommend performance optimizations when needed"

@@ -1,62 +1,188 @@
 {
   "version": "1.0.0",
-  "name": "AI Rules Hub Sync Configuration",
-  "description": "Configuration for syncing AI coding standards across different AI-powered development tools",
-  "syncSettings": {
-    "autoSync": true,
-    "syncInterval": "daily",
-    "conflictResolution": "latest"
+  "sync_settings": {
+    "enabled": true,
+    "update_frequency": "daily",
+    "auto_sync": true,
+    "last_sync": null,
+    "sync_on_commit": true
   },
-  "tools": {
-    "copilot": {
+  "repository": {
+    "name": "ai-rules-hub",
+    "url": "https://github.com/deb-sahu/ai-rules-hub",
+    "branch": "main",
+    "index_file": ".ai-rules-index.json"
+  },
+  "ai_tools": {
+    "github_copilot": {
       "enabled": true,
+      "sync_method": "automatic",
       "settings": {
-        "useRulesFile": true,
-        "useStyleguide": true,
-        "useSnippets": true
+        "context_window": "large",
+        "suggestion_mode": "automatic",
+        "use_rules": true,
+        "use_styleguides": true,
+        "use_snippets": true
+      },
+      "filters": {
+        "enabled_languages": ["csharp-dotnet", "typescript", "react", "sql", "python"],
+        "min_priority": "medium",
+        "include_examples": true
       }
     },
     "cursor": {
       "enabled": true,
+      "sync_method": "sync_config",
       "settings": {
-        "useRulesFile": true,
-        "useStyleguide": true,
-        "useSnippets": true,
-        "contextWindow": "large"
-      }
-    },
-    "codewhisperer": {
-      "enabled": true,
-      "settings": {
-        "useRulesFile": true,
-        "useStyleguide": false,
-        "useSnippets": true
+        "rules_path": "./",
+        "auto_index": true,
+        "inline_suggestions": true,
+        "chat_mode": "enhanced",
+        "use_rules": true,
+        "use_styleguides": true,
+        "use_snippets": true
+      },
+      "filters": {
+        "enabled_languages": ["csharp-dotnet", "typescript", "react", "sql", "python"],
+        "min_priority": "low",
+        "include_examples": true
+      },
+      "shortcuts": {
+        "@rules": "Reference coding rules",
+        "@style": "Reference style guides",
+        "@snippet": "Insert code snippet"
       }
     },
     "tabnine": {
       "enabled": true,
+      "sync_method": "manual",
       "settings": {
-        "useRulesFile": true,
-        "useStyleguide": true,
-        "useSnippets": true
+        "team_learning": true,
+        "local_model": false,
+        "use_rules": true,
+        "completion_length": "medium"
+      },
+      "filters": {
+        "enabled_languages": ["csharp-dotnet", "typescript", "react", "sql", "python"],
+        "min_priority": "high"
+      }
+    },
+    "codeium": {
+      "enabled": true,
+      "sync_method": "manual",
+      "settings": {
+        "use_rules": true,
+        "inline_completions": true,
+        "chat_enabled": true
+      },
+      "filters": {
+        "enabled_languages": ["csharp-dotnet", "typescript", "react", "sql", "python"],
+        "min_priority": "medium"
+      }
+    },
+    "amazon_codewhisperer": {
+      "enabled": false,
+      "sync_method": "manual",
+      "settings": {
+        "reference_tracker": true,
+        "security_scan": true,
+        "use_rules": true
+      },
+      "filters": {
+        "enabled_languages": ["csharp-dotnet", "typescript", "python"],
+        "min_priority": "high"
       }
     }
   },
-  "paths": {
-    "rulesIndex": ".ai-rules-index.json",
-    "languageFolders": [
-      "csharp-dotnet",
-      "typescript",
-      "react",
-      "sql",
-      "python",
-      "java-spring-boot",
-      "dart-flutter"
+  "language_preferences": {
+    "csharp-dotnet": {
+      "priority": "high",
+      "enforce_rules": ["naming_conventions", "security", "error_handling"],
+      "frameworks": [".NET 6+", "ASP.NET Core", "Entity Framework Core"],
+      "additional_context": [
+        "Use async/await for I/O operations",
+        "Prefer dependency injection",
+        "Follow SOLID principles"
+      ]
+    },
+    "typescript": {
+      "priority": "high",
+      "enforce_rules": ["type_safety", "security", "best_practices"],
+      "frameworks": ["Node.js", "Express", "NestJS"],
+      "additional_context": [
+        "Strict type checking enabled",
+        "Use explicit types over any",
+        "Prefer const over let"
+      ]
+    },
+    "react": {
+      "priority": "high",
+      "enforce_rules": ["hooks_usage", "accessibility", "performance"],
+      "frameworks": ["React 18+", "Next.js", "TypeScript"],
+      "additional_context": [
+        "Use functional components with hooks",
+        "Follow React best practices",
+        "Optimize performance with memo/callback"
+      ]
+    },
+    "sql": {
+      "priority": "high",
+      "enforce_rules": ["security", "performance", "query_writing"],
+      "frameworks": ["PostgreSQL", "SQL Server"],
+      "additional_context": [
+        "Always use parameterized queries",
+        "Optimize with proper indexes",
+        "Follow naming conventions"
+      ]
+    },
+    "python": {
+      "priority": "high",
+      "enforce_rules": ["type_hints", "pep8_compliance", "security"],
+      "frameworks": ["Django", "FastAPI", "pytest"],
+      "additional_context": [
+        "Use type hints for all functions",
+        "Follow PEP 8 style guide",
+        "Prefer pathlib over os.path"
+      ]
+    }
+  },
+  "notification_settings": {
+    "notify_on_sync": false,
+    "notify_on_rule_violation": true,
+    "notify_on_update": true,
+    "notification_channels": ["console", "status_bar"]
+  },
+  "performance": {
+    "cache_rules": true,
+    "cache_duration_hours": 24,
+    "max_context_size": 50000,
+    "parallel_processing": true
+  },
+  "security": {
+    "validate_sources": true,
+    "allow_remote_rules": true,
+    "require_https": true,
+    "trusted_domains": [
+      "github.com",
+      "raw.githubusercontent.com"
     ]
   },
-  "rules": {
-    "enforceConsistency": true,
-    "validateBeforeSync": true,
-    "backupBeforeUpdate": true
+  "fallback": {
+    "use_local_cache": true,
+    "default_behavior": "permissive",
+    "offline_mode": true
+  },
+  "logging": {
+    "enabled": true,
+    "level": "info",
+    "log_sync_events": true,
+    "log_rule_applications": false,
+    "retention_days": 30
+  },
+  "advanced": {
+    "custom_rule_path": null,
+    "extend_base_rules": true,
+    "override_priorities": false,
+    "experimental_features": false
   }
 }

@@ -1,131 +1,238 @@
-# AI Rules Hub
+# AI Coding Standards Repository
 
-Centralized, provider-agnostic source of coding rules and standards for different languages and frameworks.
+Centralized AI coding standards and style guides with automated sync across GitHub Copilot, Cursor, and other AI-powered development tools for consistent code completions.
 
-## Overview
+**📚 [Setup Guide](SETUP.md)** - Step-by-step instructions for automatic integration with VS Code Copilot and Cursor IDE.
 
-This repository provides a comprehensive collection of AI coding standards, style guides, and code snippets for various programming languages and frameworks. It's designed to work seamlessly with AI-powered development tools like GitHub Copilot, Cursor, AWS CodeWhisperer, and Tabnine to ensure consistent, high-quality code completions.
+## 📋 Overview
 
-## Supported Languages & Frameworks
+This repository contains comprehensive coding standards, style guides, and code snippets for multiple programming languages and frameworks. These standards are designed to be consumed by AI coding assistants to ensure consistent, high-quality code generation across your development team.
 
-- **C#/.NET** - Enterprise .NET applications
-- **TypeScript** - Type-safe JavaScript development
-- **React** - Modern React applications with hooks and best practices
-- **SQL** - Database queries and schema design
-- **Python** - Python 3.x with PEP 8 standards
-- **Java/Spring Boot** - Enterprise Java applications
-- **Dart/Flutter** - Cross-platform mobile development
-
-## Repository Structure
+## 🗂️ Repository Structure
 
 ```
-ai-rules-hub/
-├── README.md                    # This file
-├── .ai-rules-index.json         # Index for AI tools integration
-├── sync-config.json             # Sync configuration for AI tools
 ├── csharp-dotnet/
-│   ├── rules.yml               # C#/.NET coding standards
-│   ├── styleguide.md           # Style guide with examples
-│   └── snippets/               # Code snippets
+│   ├── rules.yml              # C#/.NET coding standards
+│   ├── styleguide.md          # Examples and best practices
+│   └── snippets/              # Code snippets and templates
 ├── typescript/
-│   ├── rules.yml               # TypeScript coding standards
-│   ├── styleguide.md           # Style guide with examples
-│   └── snippets/               # Code snippets
+│   ├── rules.yml              # TypeScript coding standards
+│   ├── styleguide.md          # Examples and best practices
+│   └── snippets/              # Code snippets and templates
 ├── react/
-│   ├── rules.yml               # React coding standards
-│   ├── styleguide.md           # Style guide with examples
-│   └── snippets/               # Code snippets
+│   ├── rules.yml              # React coding standards
+│   ├── styleguide.md          # Examples and best practices
+│   └── snippets/              # Code snippets and templates
 ├── sql/
-│   ├── rules.yml               # SQL coding standards
-│   ├── styleguide.md           # Style guide with examples
-│   └── snippets/               # Code snippets
+│   ├── rules.yml              # SQL coding standards
+│   ├── styleguide.md          # Examples and best practices
+│   └── snippets/              # Code snippets and templates
 ├── python/
-│   ├── rules.yml               # Python coding standards
-│   ├── styleguide.md           # Style guide with examples
-│   └── snippets/               # Code snippets
+│   ├── rules.yml              # Python coding standards
+│   ├── styleguide.md          # Examples and best practices
+│   └── snippets/              # Code snippets and templates
 ├── java-spring-boot/
-│   ├── rules.yml               # Java/Spring Boot coding standards
-│   ├── styleguide.md           # Style guide with examples
-│   └── snippets/               # Code snippets
-└── dart-flutter/
-    ├── rules.yml               # Dart/Flutter coding standards
-    ├── styleguide.md           # Style guide with examples
-    └── snippets/               # Code snippets
+│   ├── rules.yml              # Java/Spring Boot coding standards
+│   ├── styleguide.md          # Examples and best practices
+│   └── snippets/              # Code snippets and templates
+├── dart-flutter/
+│   ├── rules.yml              # Dart/Flutter coding standards
+│   ├── styleguide.md          # Examples and best practices
+│   └── snippets/              # Code snippets and templates
+├── .ai-rules-index.json       # Index file for AI tools
+├── sync-config.json           # Configuration for syncing with AI tools
+└── README.md                  # This file
 ```
 
-## Usage
+## 🎯 Purpose
 
-### For AI Tools
+This repository serves several key purposes:
 
-This repository is designed to be consumed by AI-powered development tools. The `.ai-rules-index.json` file provides a standardized way for tools to discover and load coding standards.
+1. **Consistency**: Ensure all developers and AI assistants follow the same coding standards
+2. **Quality**: Maintain high code quality through well-defined best practices
+3. **Efficiency**: Speed up development with AI-powered code completion that follows your standards
+4. **Education**: Provide clear examples and guidance for developers
+5. **Integration**: Seamlessly integrate with popular AI coding tools
 
-### For Developers
+## 🚀 Supported Languages & Frameworks
 
-1. Browse the language-specific folders to find coding standards
-2. Review the `rules.yml` files for AI-specific coding rules
-3. Check the `styleguide.md` files for detailed examples and best practices
-4. Use code snippets from the `snippets/` folders as templates
+### C#/.NET
+- Naming conventions and code organization
+- Dependency injection patterns
+- Async/await best practices
+- LINQ usage guidelines
+- Testing with xUnit/NUnit
+- Error handling and logging
 
-## Integration with AI Tools
+### TypeScript
+- Type safety and type annotations
+- Modern JavaScript features
+- Function and class patterns
+- Error handling strategies
+- Testing with Jest/Vitest
+
+### React
+- Component structure and organization
+- Hooks usage and custom hooks
+- State management patterns
+- Performance optimization
+- Accessibility guidelines
+- Testing with React Testing Library
+
+### SQL
+- Schema design and normalization
+- Query optimization
+- Indexing strategies
+- Security best practices
+- Stored procedures and functions
+- Transaction handling
+
+### Python
+- PEP 8 compliance
+- Type hints and annotations
+- Async/await patterns
+- Data structures and algorithms
+- Testing with pytest
+- Error handling and context managers
+
+## 🛠️ Integration with AI Tools
+
+**→ For detailed setup instructions, see [SETUP.md](SETUP.md)**
 
 ### GitHub Copilot
 
-GitHub Copilot automatically reads the `.ai-rules-index.json` file to understand your coding standards and provide better suggestions.
+GitHub Copilot can reference these standards through the `.ai-rules-index.json` file. To use:
 
-### Cursor
+1. Ensure this repository is accessible to your GitHub account
+2. The `.ai-rules-index.json` file provides metadata about available rules
+3. Copilot will automatically suggest code that follows these standards
 
-Cursor uses the `sync-config.json` file to synchronize coding standards and provide context-aware completions.
+**Quick Start:** See [VS Code Copilot Setup](SETUP.md#vs-code-with-github-copilot-setup) for automatic integration steps.
 
-### AWS CodeWhisperer
+### Cursor IDE
 
-CodeWhisperer can be configured to reference the rules files for language-specific recommendations.
+Cursor can load these rules to provide context-aware suggestions:
 
-### Tabnine
+1. Configure `sync-config.json` with your repository settings
+2. Cursor will sync rules and provide completions based on your standards
+3. Use `@rules` in Cursor to explicitly reference specific standards
 
-Tabnine can learn from the style guides and snippets to provide more accurate completions.
+**Quick Start:** See [Cursor IDE Setup](SETUP.md#cursor-ide-setup) for automatic integration steps.
 
-## Contributing
+### Other AI Tools
 
-To add a new language or framework:
+The standardized format (`rules.yml` + `styleguide.md`) can be consumed by:
+- Tabnine
+- Codeium
+- Amazon CodeWhisperer
+- Any tool supporting custom rule definitions
 
-1. Create a new folder with a descriptive name (e.g., `kotlin`)
-2. Add `rules.yml` with AI coding standards
-3. Add `styleguide.md` with examples and best practices
-4. Optionally add a `snippets/` folder with code templates
-5. Update `.ai-rules-index.json` to include the new language
-6. Update `sync-config.json` to add the folder to the paths list
+## 📖 Using the Standards
 
-## File Formats
+**→ New to setup? See [SETUP.md](SETUP.md) for automatic integration with VS Code Copilot and Cursor IDE.**
 
-### rules.yml
+### For Developers
 
-Contains AI-specific coding rules in YAML format:
-- Naming conventions
-- Code organization patterns
-- Security best practices
-- Performance guidelines
-- Framework-specific rules
+Each language folder contains:
 
-### styleguide.md
+1. **rules.yml**: Machine-readable rules with priority levels and examples
+2. **styleguide.md**: Human-readable guide with comprehensive examples showing ✅ good and ❌ bad practices
+3. **snippets/**: Reusable code templates
 
-Markdown document with:
-- Detailed explanations of coding standards
-- Code examples (good and bad)
-- Best practices
-- Common pitfalls to avoid
+### For AI Tools
 
-### snippets/
+The rules are structured to be easily parsed:
 
-Directory containing reusable code templates that AI tools can reference.
+```yaml
+rules:
+  category_name:
+    - rule: "Description of the rule"
+      priority: "high|medium|low|critical"
+      example: "Code example"
+```
 
-## License
+### Rule Priorities
 
-This repository is open-source and available for use with any AI-powered development tool.
+- **critical**: Must follow (security, correctness)
+- **high**: Should follow (best practices, maintainability)
+- **medium**: Recommended (code quality, readability)
+- **low**: Optional (style preferences)
 
-## Maintenance
+## 🔄 Syncing with AI Tools
 
-This repository is actively maintained to keep up with:
-- Language and framework updates
-- New AI tool capabilities
-- Community feedback and contributions
-- Evolving best practices
+The `sync-config.json` file configures automatic syncing:
+
+```json
+{
+  "sync_enabled": true,
+  "tools": ["copilot", "cursor", "tabnine"],
+  "update_frequency": "daily"
+}
+```
+
+## 🤝 Contributing
+
+To add or update standards:
+
+1. Edit the appropriate `rules.yml` file
+2. Update the corresponding `styleguide.md` with examples
+3. Add any useful snippets to the `snippets/` folder
+4. Update `.ai-rules-index.json` if adding new categories
+5. Submit a pull request
+
+### Guidelines for Contributors
+
+- Keep rules concise and actionable
+- Provide clear examples for each rule
+- Specify priority levels appropriately
+- Include both positive and negative examples in styleguides
+- Test rules with AI tools before submitting
+
+## 📚 Additional Resources
+
+### Official Documentation
+- [C#/.NET Documentation](https://docs.microsoft.com/en-us/dotnet/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [React Documentation](https://react.dev/)
+- [Python Documentation](https://docs.python.org/)
+- [SQL Standards](https://www.iso.org/standard/63555.html)
+
+### AI Tool Documentation
+- [GitHub Copilot](https://github.com/features/copilot)
+- [Cursor IDE](https://cursor.sh/)
+- [Tabnine](https://www.tabnine.com/)
+
+## 📄 License
+
+This repository is provided for use within your organization. Modify and adapt as needed for your specific requirements.
+
+## 🔐 Security
+
+These rules include security best practices:
+- Input validation and sanitization
+- Secure authentication and authorization
+- Protection against common vulnerabilities (SQL injection, XSS, etc.)
+- Secure data storage and transmission
+
+## 📞 Support
+
+For questions or issues:
+- Create an issue in this repository
+- Contact your development team lead
+- Refer to the styleguides for detailed examples
+
+## 🔮 Future Enhancements
+
+Planned additions:
+- Java coding standards
+- Go coding standards
+- Kotlin coding standards
+- GraphQL best practices
+- Docker and container standards
+- CI/CD pipeline configurations
+- API design guidelines
+- Microservices patterns
+
+---
+
+**Note**: These standards are living documents. Regular updates ensure they stay current with evolving best practices and new language features.

@@ -1,107 +1,180 @@
+# SQL AI Coding Standards
+
 version: "1.0.0"
-language: "SQL"
-database_systems: ["PostgreSQL", "MySQL", "SQL Server", "Oracle"]
+language: "sql"
 
-naming_conventions:
-  tables:
-    - rule: "Use snake_case for table names"
-      example: "user_accounts, order_items"
-    - rule: "Use plural nouns for table names"
-      example: "users, orders, products"
-  columns:
-    - rule: "Use snake_case for column names"
-      example: "user_id, created_at, first_name"
-  primary_keys:
-    - rule: "Name primary keys as 'id' or '{table}_id'"
-      example: "id, user_id"
-  foreign_keys:
-    - rule: "Name foreign keys as '{referenced_table}_id'"
-      example: "user_id, order_id"
-  indexes:
-    - rule: "Name as 'idx_{table}_{columns}'"
-      example: "idx_users_email, idx_orders_user_id_created_at"
-  constraints:
-    - rule: "Use descriptive names with prefixes"
-      example: "pk_users_id, fk_orders_user_id, ck_users_age_positive"
+rules:
+  naming_conventions:
+    - rule: "Use lowercase with underscores for table and column names (snake_case)"
+      priority: "high"
+      example: "CREATE TABLE user_profiles (user_id INT, first_name VARCHAR(50));"
+    
+    - rule: "Use singular names for tables"
+      priority: "medium"
+      example: "user, order, product (not users, orders, products)"
+    
+    - rule: "Prefix primary keys with table name"
+      priority: "medium"
+      example: "user_id, order_id, product_id"
+    
+    - rule: "Use descriptive names, avoid abbreviations"
+      priority: "high"
+      example: "customer_address (not cust_addr)"
 
-schema_design:
-  normalization:
-    - "Follow Third Normal Form (3NF) for most cases"
-    - "Denormalize judiciously for performance"
-    - "Document denormalization decisions"
-  data_types:
-    - "Use appropriate data types for columns"
-    - "Use VARCHAR with specific length, not TEXT unless needed"
-    - "Use DECIMAL for monetary values"
-    - "Use TIMESTAMP WITH TIME ZONE for dates"
-  constraints:
-    - "Define primary keys for all tables"
-    - "Define foreign keys for referential integrity"
-    - "Use CHECK constraints for data validation"
-    - "Use NOT NULL where appropriate"
+  schema_design:
+    - rule: "Define primary keys for all tables"
+      priority: "critical"
+      example: "user_id INT PRIMARY KEY"
+    
+    - rule: "Use foreign keys to enforce referential integrity"
+      priority: "high"
+      example: "FOREIGN KEY (user_id) REFERENCES user(user_id)"
+    
+    - rule: "Normalize data to at least 3NF to reduce redundancy"
+      priority: "high"
+      
+    - rule: "Use appropriate data types (avoid VARCHAR(MAX) when size is known)"
+      priority: "high"
+      
+    - rule: "Set NOT NULL constraints where applicable"
+      priority: "high"
+      
+    - rule: "Use indexes on frequently queried columns"
+      priority: "high"
+      example: "CREATE INDEX idx_user_email ON user(email);"
 
-best_practices:
-  queries:
-    - "Use explicit column names instead of SELECT *"
-    - "Use table aliases for readability"
-    - "Use JOIN instead of subqueries when possible"
-    - "Use WHERE clause to filter data early"
-    - "Use appropriate join types (INNER, LEFT, RIGHT, FULL)"
+  query_writing:
+    - rule: "Use explicit column names instead of SELECT *"
+      priority: "high"
+      example: "SELECT user_id, first_name, last_name FROM user"
+    
+    - rule: "Use uppercase for SQL keywords"
+      priority: "medium"
+      example: "SELECT, FROM, WHERE, JOIN, ORDER BY"
+    
+    - rule: "Always use table aliases in joins for clarity"
+      priority: "high"
+      example: "SELECT u.user_id, o.order_id FROM user u JOIN order o ON u.user_id = o.user_id"
+    
+    - rule: "Use INNER JOIN instead of implicit joins (comma-separated tables)"
+      priority: "high"
+      
+    - rule: "Place JOIN conditions in ON clause, filter conditions in WHERE clause"
+      priority: "high"
+      example: "FROM user u JOIN order o ON u.user_id = o.user_id WHERE o.status = 'completed'"
+
   performance:
-    - "Create indexes on frequently queried columns"
-    - "Create composite indexes for multi-column queries"
-    - "Avoid functions on indexed columns in WHERE"
-    - "Use EXPLAIN/EXPLAIN ANALYZE to optimize queries"
-    - "Limit result sets with LIMIT/TOP"
-  transactions:
-    - "Use transactions for multi-statement operations"
-    - "Keep transactions short"
-    - "Use appropriate isolation levels"
-    - "Always commit or rollback explicitly"
+    - rule: "Use EXISTS instead of COUNT(*) > 0 for existence checks"
+      priority: "medium"
+      example: "WHERE EXISTS (SELECT 1 FROM order WHERE user_id = u.user_id)"
+    
+    - rule: "Avoid functions on indexed columns in WHERE clauses"
+      priority: "high"
+      example: "Bad: WHERE YEAR(created_date) = 2024; Good: WHERE created_date >= '2024-01-01'"
+    
+    - rule: "Use UNION ALL instead of UNION when duplicates are acceptable"
+      priority: "medium"
+      
+    - rule: "Limit result sets with TOP/LIMIT for large queries"
+      priority: "high"
+      
+    - rule: "Use appropriate JOIN types (INNER, LEFT, RIGHT, FULL)"
+      priority: "high"
+
+  data_modification:
+    - rule: "Always use WHERE clause with UPDATE and DELETE statements"
+      priority: "critical"
+      example: "UPDATE user SET status = 'inactive' WHERE user_id = 123;"
+    
+    - rule: "Use transactions for multiple related DML operations"
+      priority: "high"
+      example: "BEGIN TRANSACTION; UPDATE...; INSERT...; COMMIT;"
+    
+    - rule: "Use parameterized queries to prevent SQL injection"
+      priority: "critical"
+      
+    - rule: "Include error handling in stored procedures"
+      priority: "high"
+
+  stored_procedures:
+    - rule: "Use clear, descriptive names with prefix (sp_, usp_)"
+      priority: "medium"
+      example: "CREATE PROCEDURE usp_GetUserOrders"
+    
+    - rule: "Include input validation"
+      priority: "high"
+      
+    - rule: "Document parameters and return values"
+      priority: "medium"
+      
+    - rule: "Use SET NOCOUNT ON to improve performance"
+      priority: "medium"
+
+  views:
+    - rule: "Use views to encapsulate complex queries"
+      priority: "medium"
+      example: "CREATE VIEW vw_ActiveUsers AS SELECT ... WHERE status = 'active'"
+    
+    - rule: "Prefix view names with 'vw_' or 'v_'"
+      priority: "medium"
+      
+    - rule: "Avoid nested views for performance"
+      priority: "medium"
+
+  functions:
+    - rule: "Use scalar functions for single value returns"
+      priority: "medium"
+      
+    - rule: "Use table-valued functions for result sets"
+      priority: "medium"
+      
+    - rule: "Prefix function names appropriately (fn_, udf_)"
+      priority: "medium"
+
+  triggers:
+    - rule: "Use triggers sparingly, document their purpose"
+      priority: "high"
+      
+    - rule: "Keep trigger logic simple and fast"
+      priority: "high"
+      
+    - rule: "Avoid recursive triggers"
+      priority: "high"
+
   security:
-    - "Use parameterized queries to prevent SQL injection"
-    - "Grant minimum necessary privileges"
-    - "Use views to restrict data access"
-    - "Encrypt sensitive data at rest"
+    - rule: "Never store sensitive data in plain text (use encryption)"
+      priority: "critical"
+      
+    - rule: "Use parameterized queries/prepared statements to prevent SQL injection"
+      priority: "critical"
+      
+    - rule: "Grant minimum necessary permissions (principle of least privilege)"
+      priority: "critical"
+      
+    - rule: "Avoid dynamic SQL unless absolutely necessary"
+      priority: "high"
 
-code_organization:
-  scripts:
-    - "One DDL operation per file for version control"
-    - "Use migrations for schema changes"
-    - "Include rollback scripts"
-    - "Version control all SQL scripts"
   formatting:
-    - "Use uppercase for SQL keywords"
-    - "Use lowercase for identifiers"
-    - "Indent nested queries"
-    - "One clause per line for complex queries"
+    - rule: "Use consistent indentation (2 or 4 spaces)"
+      priority: "medium"
+      
+    - rule: "Place each column on a new line in SELECT statements"
+      priority: "low"
+      
+    - rule: "Align JOIN clauses for readability"
+      priority: "low"
+
   comments:
-    - "Document complex business logic"
-    - "Explain non-obvious performance optimizations"
-    - "Include examples for stored procedures"
+    - rule: "Add comments for complex queries and business logic"
+      priority: "medium"
+      example: "-- Calculate total revenue for active customers"
+    
+    - rule: "Document assumptions and edge cases"
+      priority: "medium"
 
-stored_procedures:
-  - "Use clear, descriptive names"
-  - "Document parameters and return values"
-  - "Handle errors appropriately"
-  - "Use consistent formatting"
-  - "Avoid cursors when set-based operations work"
-
-views:
-  - "Name views with 'v_' or '_view' suffix"
-  - "Document view purpose"
-  - "Keep views simple for maintainability"
-  - "Use indexed views for performance when appropriate"
-
-testing:
-  - "Test queries with representative data volumes"
-  - "Test edge cases and null values"
-  - "Verify constraint enforcement"
-  - "Test transaction rollback scenarios"
-  - "Benchmark performance of complex queries"
-
-documentation:
-  - "Document schema design decisions"
-  - "Maintain data dictionary"
-  - "Document stored procedures and functions"
-  - "Include ER diagrams for complex schemas"
+ai_completion_hints:
+  - "Suggest appropriate indexes for query optimization"
+  - "Recommend query optimization techniques"
+  - "Provide execution plan analysis hints"
+  - "Suggest appropriate data types for columns"
+  - "Recommend normalization or denormalization strategies"

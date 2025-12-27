@@ -1,135 +1,177 @@
+# React AI Coding Standards
+
 version: "1.0.0"
-framework: "React"
-target: "React 18+"
+language: "typescript"
+framework: "react"
 
-naming_conventions:
-  components:
+rules:
+  component_structure:
+    - rule: "Use functional components with hooks instead of class components"
+      priority: "high"
+      example: "const UserProfile: React.FC<UserProfileProps> = ({ user }) => { }"
+    
     - rule: "Use PascalCase for component names"
-      example: "function UserProfile() { }"
-  files:
-    - rule: "Component files use PascalCase with .tsx extension"
-      example: "UserProfile.tsx"
-  hooks:
-    - rule: "Custom hooks start with 'use' prefix"
-      example: "function useUserData() { }"
-  event_handlers:
-    - rule: "Prefix with 'handle' or 'on'"
-      example: "const handleClick = () => { }"
-  props:
-    - rule: "Use camelCase for prop names"
-      example: "interface UserProps { userId: number; }"
-  constants:
-    - rule: "Use UPPER_SNAKE_CASE for constants"
-      example: "const MAX_ITEMS = 100;"
+      priority: "high"
+      example: "const UserDashboard = () => { }"
+    
+    - rule: "One component per file, file name matches component name"
+      priority: "high"
+      
+    - rule: "Organize component files: ComponentName.tsx, ComponentName.module.css, ComponentName.test.tsx"
+      priority: "medium"
 
-component_structure:
-  functional_components:
-    - "Always use functional components over class components"
-    - "Use React.FC or explicit return type"
-    - "Destructure props in function parameters"
-  hooks_order:
-    - "useState hooks first"
-    - "useEffect hooks second"
-    - "useContext and other hooks third"
-    - "Custom hooks last"
-  component_organization:
-    - "Interfaces and types at top"
-    - "Component definition"
-    - "Helper functions inside component"
-    - "Export at bottom"
+  props_and_types:
+    - rule: "Define explicit TypeScript interfaces/types for component props"
+      priority: "high"
+      example: "interface ButtonProps { label: string; onClick: () => void; disabled?: boolean; }"
+    
+    - rule: "Use destructuring for props"
+      priority: "high"
+      example: "const Button = ({ label, onClick, disabled = false }: ButtonProps) => { }"
+    
+    - rule: "Provide default values for optional props"
+      priority: "medium"
+      
+    - rule: "Use React.FC or explicit return types for components"
+      priority: "medium"
 
-best_practices:
-  hooks:
-    - "Always follow rules of hooks"
-    - "Use useCallback for function memoization"
-    - "Use useMemo for expensive computations"
-    - "Use useRef for DOM access and mutable values"
-    - "Clean up effects with return function"
-  props:
-    - "Use TypeScript interfaces for props"
-    - "Destructure props for clarity"
-    - "Provide default props when appropriate"
-    - "Use children prop type from React"
+  hooks_usage:
+    - rule: "Follow the Rules of Hooks (only call at top level, only in React functions)"
+      priority: "critical"
+      
+    - rule: "Use useState for local component state"
+      priority: "high"
+      example: "const [count, setCount] = useState<number>(0);"
+    
+    - rule: "Use useEffect for side effects with proper cleanup"
+      priority: "high"
+      example: "useEffect(() => { const subscription = subscribe(); return () => subscription.unsubscribe(); }, []);"
+    
+    - rule: "Include all dependencies in useEffect, useCallback, useMemo dependency arrays"
+      priority: "high"
+      
+    - rule: "Extract complex logic into custom hooks"
+      priority: "medium"
+      example: "const { data, loading, error } = useFetchUser(userId);"
+    
+    - rule: "Use useCallback for functions passed as props to prevent re-renders"
+      priority: "medium"
+      
+    - rule: "Use useMemo for expensive computations"
+      priority: "medium"
+
   state_management:
-    - "Keep state close to where it's used"
-    - "Lift state up when needed by multiple components"
-    - "Use Context API for global state"
-    - "Consider Redux or Zustand for complex state"
-  performance:
-    - "Use React.memo for expensive components"
-    - "Avoid inline object/array creation in JSX"
-    - "Use key prop correctly in lists"
-    - "Lazy load components with React.lazy"
-  jsx:
-    - "Keep JSX readable and simple"
-    - "Extract complex JSX into sub-components"
-    - "Use fragments to avoid unnecessary divs"
-    - "Use semantic HTML elements"
+    - rule: "Keep state as local as possible, lift up when necessary"
+      priority: "high"
+      
+    - rule: "Use Context API for global state (theme, auth, etc.)"
+      priority: "medium"
+      example: "const { user } = useContext(AuthContext);"
+    
+    - rule: "Consider state management libraries (Redux, Zustand, Jotai) for complex apps"
+      priority: "low"
 
-patterns:
-  custom_hooks:
-    - "Extract reusable logic into custom hooks"
-    - "Name starts with 'use'"
-    - "Follow hooks rules"
-  composition:
-    - "Favor composition over inheritance"
-    - "Use children prop for flexible components"
-    - "Use render props when appropriate"
-  error_boundaries:
-    - "Wrap components with error boundaries"
-    - "Provide fallback UI for errors"
-  conditional_rendering:
-    - "Use ternary for simple conditions"
-    - "Use && for single branch"
-    - "Extract complex conditions into variables"
+  rendering_optimization:
+    - rule: "Use React.memo for pure components to prevent unnecessary re-renders"
+      priority: "medium"
+      example: "export const UserCard = React.memo<UserCardProps>(({ user }) => { });"
+    
+    - rule: "Avoid inline function definitions in JSX for frequently rendered components"
+      priority: "medium"
+      
+    - rule: "Use key prop correctly for list items (stable, unique identifiers)"
+      priority: "high"
+      example: "<li key={user.id}>{user.name}</li>"
+    
+    - rule: "Lazy load components with React.lazy and Suspense"
+      priority: "medium"
+      example: "const Dashboard = React.lazy(() => import('./Dashboard'));"
 
-state_management:
-  local_state:
-    - "Use useState for component-level state"
-    - "Use useReducer for complex state logic"
-  context:
-    - "Use Context API for global state"
-    - "Create separate contexts for different concerns"
-    - "Memoize context values"
-  external_libraries:
-    - "Redux for complex global state"
-    - "Zustand for simpler state management"
-    - "React Query for server state"
+  jsx_best_practices:
+    - rule: "Use fragments (<></>) to avoid unnecessary div wrappers"
+      priority: "medium"
+      
+    - rule: "Use conditional rendering appropriately (&&, ternary, early returns)"
+      priority: "high"
+      example: "{isLoading ? <Spinner /> : <Content />}"
+    
+    - rule: "Extract complex JSX into separate components"
+      priority: "medium"
+      
+    - rule: "Use semantic HTML elements"
+      priority: "medium"
 
-styling:
-  approaches:
-    - "CSS Modules for scoped styles"
-    - "Styled-components for CSS-in-JS"
-    - "Tailwind CSS for utility-first"
-    - "Avoid inline styles except for dynamic values"
-  organization:
-    - "One style file per component"
-    - "Use consistent naming convention"
-    - "Group related styles together"
+  event_handling:
+    - rule: "Use arrow functions or useCallback for event handlers"
+      priority: "high"
+      example: "const handleClick = useCallback(() => { }, []);"
+    
+    - rule: "Prevent default behavior explicitly when needed"
+      priority: "medium"
+      example: "const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); };"
+    
+    - rule: "Type event handlers correctly"
+      priority: "high"
+      example: "onChange: (e: React.ChangeEvent<HTMLInputElement>) => void"
 
-testing:
-  - "Use React Testing Library"
-  - "Test user behavior, not implementation"
-  - "Use screen queries from @testing-library/react"
-  - "Mock external dependencies"
-  - "Test accessibility with jest-axe"
+  forms:
+    - rule: "Use controlled components for form inputs"
+      priority: "high"
+      example: "<input value={name} onChange={(e) => setName(e.target.value)} />"
+    
+    - rule: "Consider form libraries (React Hook Form, Formik) for complex forms"
+      priority: "medium"
+      
+    - rule: "Validate form input and provide user feedback"
+      priority: "high"
 
-accessibility:
-  - "Use semantic HTML elements"
-  - "Provide alt text for images"
-  - "Use ARIA labels when needed"
-  - "Ensure keyboard navigation works"
-  - "Test with screen readers"
+  styling:
+    - rule: "Use CSS Modules, styled-components, or Tailwind CSS consistently"
+      priority: "medium"
+      
+    - rule: "Avoid inline styles except for dynamic values"
+      priority: "medium"
+      
+    - rule: "Follow a consistent naming convention for CSS classes"
+      priority: "medium"
 
-security:
-  - "Sanitize user input before rendering"
-  - "Use dangerouslySetInnerHTML sparingly"
-  - "Validate data from APIs"
-  - "Implement proper authentication"
-  - "Use environment variables for secrets"
+  testing:
+    - rule: "Write tests using React Testing Library"
+      priority: "high"
+      
+    - rule: "Test user interactions, not implementation details"
+      priority: "high"
+      example: "fireEvent.click(getByRole('button', { name: /submit/i }));"
+    
+    - rule: "Use data-testid sparingly, prefer accessible queries"
+      priority: "medium"
 
-documentation:
-  - "Document complex components with JSDoc"
-  - "Provide prop types documentation"
-  - "Include usage examples"
-  - "Document custom hooks behavior"
+  accessibility:
+    - rule: "Use semantic HTML and ARIA attributes"
+      priority: "high"
+      
+    - rule: "Ensure keyboard navigation works"
+      priority: "high"
+      
+    - rule: "Provide alt text for images"
+      priority: "high"
+      
+    - rule: "Maintain proper heading hierarchy"
+      priority: "medium"
+
+  security:
+    - rule: "Sanitize user input to prevent XSS attacks"
+      priority: "critical"
+      
+    - rule: "Avoid dangerouslySetInnerHTML unless absolutely necessary"
+      priority: "critical"
+      
+    - rule: "Store sensitive data securely, not in component state"
+      priority: "critical"
+
+ai_completion_hints:
+  - "Suggest appropriate React hooks for the use case"
+  - "Recommend performance optimizations when needed"
+  - "Provide accessibility attributes (aria-label, role, etc.)"
+  - "Suggest proper error boundaries for error handling"
+  - "Recommend appropriate state management patterns"

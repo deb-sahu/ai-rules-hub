@@ -1,90 +1,103 @@
+# C#/.NET AI Coding Standards
+
 version: "1.0.0"
-language: "C#/.NET"
-framework: ".NET 6.0+"
+language: "csharp"
+framework: ".NET"
 
-naming_conventions:
-  classes:
-    - rule: "Use PascalCase for class names"
-      example: "public class UserRepository"
-  interfaces:
+rules:
+  naming_conventions:
+    - rule: "Use PascalCase for class names, method names, and public properties"
+      priority: "high"
+      example: "public class UserService { public string UserName { get; set; } }"
+    
+    - rule: "Use camelCase for private fields and local variables"
+      priority: "high"
+      example: "private string userName; var userId = 1;"
+    
     - rule: "Prefix interfaces with 'I'"
-      example: "public interface IUserService"
-  methods:
-    - rule: "Use PascalCase for method names"
-      example: "public void ProcessOrder()"
-  variables:
-    - rule: "Use camelCase for local variables and parameters"
-      example: "var userId = 123;"
-  constants:
-    - rule: "Use PascalCase for constants"
-      example: "public const int MaxRetries = 3;"
-  private_fields:
-    - rule: "Use _camelCase with underscore prefix for private fields"
-      example: "private readonly ILogger _logger;"
+      priority: "high"
+      example: "public interface IUserRepository { }"
+    
+    - rule: "Use async suffix for asynchronous methods"
+      priority: "medium"
+      example: "public async Task<User> GetUserAsync(int id)"
 
-code_organization:
-  file_structure:
-    - "One class per file"
-    - "File name matches class name"
-    - "Use namespaces that match folder structure"
-  using_directives:
-    - "Place using statements at the top of the file"
-    - "Sort using statements alphabetically"
-    - "Remove unused using statements"
-  class_members_order:
-    - "Constants"
-    - "Fields"
-    - "Constructors"
-    - "Properties"
-    - "Methods"
-    - "Private methods"
+  code_organization:
+    - rule: "One class per file, file name matches class name"
+      priority: "high"
+      
+    - rule: "Order members: fields, constructors, properties, methods"
+      priority: "medium"
+      
+    - rule: "Group using statements and remove unused ones"
+      priority: "medium"
 
-best_practices:
-  async_await:
-    - "Use async/await for asynchronous operations"
-    - "Suffix async methods with 'Async'"
-    - "Always use ConfigureAwait(false) in library code"
-  dependency_injection:
-    - "Use constructor injection for dependencies"
-    - "Register services in Program.cs or Startup.cs"
-    - "Use interfaces for abstraction"
+  best_practices:
+    - rule: "Use dependency injection for service dependencies"
+      priority: "high"
+      example: "public UserService(IUserRepository repository, ILogger<UserService> logger)"
+    
+    - rule: "Always dispose of IDisposable resources using 'using' statement or pattern"
+      priority: "high"
+      example: "using var connection = new SqlConnection(connectionString);"
+    
+    - rule: "Use async/await for I/O operations"
+      priority: "high"
+      
+    - rule: "Prefer LINQ for collection operations"
+      priority: "medium"
+      example: "var activeUsers = users.Where(u => u.IsActive).ToList();"
+    
+    - rule: "Use nullable reference types and handle null cases"
+      priority: "high"
+      example: "public string? OptionalValue { get; set; }"
+
   error_handling:
-    - "Use specific exception types"
-    - "Don't catch generic exceptions unless necessary"
-    - "Always log exceptions with context"
-  linq:
-    - "Prefer LINQ for collection operations"
-    - "Use method syntax for complex queries"
-    - "Use query syntax for simple, readable queries"
-  nullability:
-    - "Enable nullable reference types"
-    - "Use null-conditional operators (?. and ??)"
-    - "Avoid null reference exceptions"
+    - rule: "Use specific exception types, avoid catching generic Exception"
+      priority: "high"
+      example: "catch (SqlException ex) when (ex.Number == 2601)"
+    
+    - rule: "Log exceptions with context information"
+      priority: "high"
+      
+    - rule: "Use try-catch only where you can handle the exception"
+      priority: "medium"
 
-security:
-  - "Never store sensitive data in code"
-  - "Use parameterized queries for database access"
-  - "Validate all user inputs"
-  - "Use Data Annotations for model validation"
-  - "Implement authentication and authorization"
-  - "Use HTTPS for all communications"
+  testing:
+    - rule: "Write unit tests using xUnit, NUnit, or MSTest"
+      priority: "high"
+      
+    - rule: "Follow Arrange-Act-Assert pattern"
+      priority: "high"
+      
+    - rule: "Use meaningful test method names describing the scenario"
+      priority: "medium"
+      example: "public void GetUser_WhenUserExists_ReturnsUser()"
 
-performance:
-  - "Use StringBuilder for string concatenation in loops"
-  - "Dispose of IDisposable objects properly (using statements)"
-  - "Use async methods for I/O operations"
-  - "Cache frequently accessed data"
-  - "Use value types (structs) for small, immutable data"
+  performance:
+    - rule: "Use StringBuilder for string concatenation in loops"
+      priority: "medium"
+      
+    - rule: "Prefer ValueTask for hot paths in async code"
+      priority: "low"
+      
+    - rule: "Use Span<T> and Memory<T> for performance-critical code"
+      priority: "low"
 
-testing:
-  - "Write unit tests using xUnit, NUnit, or MSTest"
-  - "Follow AAA pattern (Arrange, Act, Assert)"
-  - "Use meaningful test names: MethodName_Scenario_ExpectedResult"
-  - "Mock dependencies using Moq or NSubstitute"
-  - "Aim for high code coverage"
+  security:
+    - rule: "Never store sensitive data in plain text"
+      priority: "critical"
+      
+    - rule: "Use parameterized queries to prevent SQL injection"
+      priority: "critical"
+      example: "command.Parameters.AddWithValue(\"@userId\", userId);"
+    
+    - rule: "Validate and sanitize user input"
+      priority: "critical"
 
-documentation:
-  - "Use XML documentation comments for public APIs"
-  - "Document complex business logic"
-  - "Keep comments up-to-date with code changes"
-  - "Use clear, concise method and variable names"
+ai_completion_hints:
+  - "Suggest appropriate design patterns (Repository, Factory, Strategy, etc.)"
+  - "Recommend SOLID principles adherence"
+  - "Provide XML documentation comments for public APIs"
+  - "Suggest appropriate logging levels and messages"
+  - "Recommend appropriate exception handling strategies"
