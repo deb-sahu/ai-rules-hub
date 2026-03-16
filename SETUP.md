@@ -1,12 +1,13 @@
 # Automatic Setup Guide for AI Coding Rules
 
-This guide provides step-by-step instructions for automatically integrating these AI coding standards with VS Code GitHub Copilot and Cursor IDE.
+This guide provides step-by-step instructions for automatically integrating these AI coding standards with VS Code GitHub Copilot, Cursor IDE, and Claude Code.
 
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [VS Code with GitHub Copilot Setup](#vs-code-with-github-copilot-setup)
 - [Cursor IDE Setup](#cursor-ide-setup)
+- [Claude Code Setup](#claude-code-setup)
 - [Verification](#verification)
 - [Troubleshooting](#troubleshooting)
 - [Advanced Configuration](#advanced-configuration)
@@ -17,7 +18,7 @@ Before setting up automatic integration, ensure you have:
 
 - Git installed on your system
 - Access to this repository (clone or fork it)
-- Active subscription to GitHub Copilot (for VS Code) or Cursor IDE
+- Active subscription to GitHub Copilot (for VS Code), Cursor IDE, or Claude Code (Claude Max/Team/Enterprise plan)
 
 ## VS Code with GitHub Copilot Setup
 
@@ -357,6 +358,168 @@ You can add rules as permanent context in Cursor:
 5. Choose the `ai-rules/` directory
 6. The rules will now be available in all chat sessions
 
+## Claude Code Setup
+
+Claude Code is Anthropic's agentic coding tool that runs in your terminal. It uses `CLAUDE.md` files to load project-specific context and instructions automatically.
+
+### Method 1: Project-Level `CLAUDE.md` (Recommended)
+
+Claude Code automatically reads `CLAUDE.md` files from your project root to understand coding standards.
+
+#### Step 1: Clone the rules repository
+
+```bash
+# Navigate to your project root
+cd /path/to/your/project
+
+# Clone as a subdirectory
+git clone https://github.com/deb-sahu/ai-rules-hub ai-rules
+
+# Or add as submodule
+git submodule add https://github.com/deb-sahu/ai-rules-hub ai-rules
+```
+
+#### Step 2: Create a `CLAUDE.md` file
+
+Create a `CLAUDE.md` file in your project root:
+
+```bash
+touch CLAUDE.md
+```
+
+#### Step 3: Configure rules in `CLAUDE.md`
+
+Add the following content to `CLAUDE.md`:
+
+```markdown
+# Project Coding Standards
+
+All coding standards are defined in the `ai-rules/` directory. Always consult the relevant rules and style guides before generating or modifying code.
+
+## Language-Specific Standards
+
+### TypeScript
+- Rules: ai-rules/typescript/rules.yml
+- Style Guide: ai-rules/typescript/styleguide.md
+- CRITICAL: No `any` types — use explicit types
+- HIGH: Strict null checks, handle undefined/null
+- Use async/await for async operations
+
+### React
+- Rules: ai-rules/react/rules.yml
+- Style Guide: ai-rules/react/styleguide.md
+- CRITICAL: Use functional components with hooks
+- HIGH: Implement proper accessibility (ARIA labels)
+- MEDIUM: Optimize with React.memo, useMemo, useCallback
+
+### Python
+- Rules: ai-rules/python/rules.yml
+- Style Guide: ai-rules/python/styleguide.md
+- CRITICAL: PEP 8 compliance
+- HIGH: Type hints for all functions
+- Use pathlib over os.path
+
+### C#/.NET
+- Rules: ai-rules/csharp-dotnet/rules.yml
+- Style Guide: ai-rules/csharp-dotnet/styleguide.md
+- CRITICAL: Async/await for I/O operations
+- HIGH: Dependency injection pattern
+- Follow SOLID principles
+
+### SQL
+- Rules: ai-rules/sql/rules.yml
+- Style Guide: ai-rules/sql/styleguide.md
+- CRITICAL: Always use parameterized queries (prevent SQL injection)
+- HIGH: Proper indexing for performance
+- Use consistent naming conventions
+
+## Rule Priority System
+
+- **CRITICAL**: Must always follow — security and correctness issues
+- **HIGH**: Should follow — best practices and maintainability
+- **MEDIUM**: Recommended — code quality and readability
+- **LOW**: Optional — style preferences
+
+## Code Generation Guidelines
+
+1. Check ai-rules/ for language-specific rules before generating code
+2. Reference styleguide.md files for examples of correct patterns
+3. Use snippets from ai-rules/{language}/snippets/ when available
+4. Prioritize security (CRITICAL) and best practices (HIGH) rules
+```
+
+#### Step 4: Verify the setup
+
+Run Claude Code from your project directory:
+
+```bash
+cd /path/to/your/project
+claude
+```
+
+Claude Code will automatically detect and load the `CLAUDE.md` file. You can confirm by asking: "What coding standards are configured for this project?"
+
+### Method 2: Using `/init` to Bootstrap
+
+Claude Code can auto-generate a `CLAUDE.md` for your project:
+
+```bash
+cd /path/to/your/project
+claude
+
+# Inside the Claude Code session, run:
+/init
+```
+
+This creates a starter `CLAUDE.md` based on your project structure. You can then edit it to reference the ai-rules directory.
+
+### Method 3: Directory-Scoped `CLAUDE.md` Files
+
+Place `CLAUDE.md` files in subdirectories for context that only applies to that part of the codebase:
+
+```
+project/
+├── CLAUDE.md                    # Project-wide standards
+├── ai-rules/                    # This rules repository
+├── frontend/
+│   └── CLAUDE.md                # Frontend-specific: reference React & TypeScript rules
+├── backend/
+│   └── CLAUDE.md                # Backend-specific: reference Python or C# rules
+└── database/
+    └── CLAUDE.md                # Database-specific: reference SQL rules
+```
+
+Example `frontend/CLAUDE.md`:
+```markdown
+# Frontend Standards
+
+Follow React and TypeScript rules from the project ai-rules:
+- ../ai-rules/react/rules.yml
+- ../ai-rules/typescript/rules.yml
+
+Use functional components with hooks. All components must include ARIA labels.
+```
+
+### Method 4: Global User-Level Configuration
+
+For rules that apply across all your projects:
+
+```bash
+mkdir -p ~/.claude
+```
+
+Create `~/.claude/CLAUDE.md`:
+
+```markdown
+# Global Coding Standards
+
+For any project with an ai-rules/ directory, follow the coding standards defined there.
+Prioritize CRITICAL and HIGH priority rules. Always use parameterized queries for SQL.
+Always include type annotations in TypeScript and Python code.
+```
+
+This file is loaded for every Claude Code session regardless of project.
+
 ## Verification
 
 ### Testing VS Code Copilot Integration
@@ -406,6 +569,36 @@ You can add rules as permanent context in Cursor:
    - Open Cursor Chat (Ctrl+L or Cmd+L)
    - Ask: "What coding rules should I follow?"
    - Cursor should reference the `.cursorrules` file
+
+### Testing Claude Code Integration
+
+1. **Start Claude Code** in your project directory:
+   ```bash
+   cd /path/to/your/project
+   claude
+   ```
+
+2. **Confirm rules are loaded** by asking:
+   ```
+   "What coding standards should I follow in this project?"
+   ```
+   Claude should reference the `CLAUDE.md` file and the ai-rules directory.
+
+3. **Test code generation**:
+   ```
+   "Generate a Python function to fetch user data from a database"
+   ```
+
+   Expected behavior:
+   - Should use type hints for all parameters and return types
+   - Should use parameterized queries (not string concatenation)
+   - Should include proper error handling
+   - Should follow PEP 8 conventions
+
+4. **Verify priority compliance**:
+   - CRITICAL rules (e.g., parameterized SQL queries) should always be followed
+   - HIGH rules (e.g., type hints) should be consistently applied
+   - Ask Claude to explain which rules it applied when generating code
 
 ## Troubleshooting
 
@@ -461,6 +654,31 @@ You can add rules as permanent context in Cursor:
 2. Reference specific rules: "Use the HIGH priority rules for error handling"
 3. Update `.cursorrules` to be more explicit about priorities
 4. Check if rules file has syntax errors
+
+### Claude Code Issues
+
+#### Problem: `CLAUDE.md` not being loaded
+
+**Solutions:**
+1. Ensure `CLAUDE.md` is in the project root (where you run `claude` from)
+2. Check the filename is exactly `CLAUDE.md` (case-sensitive)
+3. Verify the file is not empty
+4. Run `claude` from the correct directory
+
+#### Problem: Rules not being followed
+
+**Solutions:**
+1. Be explicit in prompts: "Follow the coding standards from ai-rules/typescript/rules.yml"
+2. Ensure the ai-rules directory is accessible and not gitignored
+3. Make `CLAUDE.md` instructions more specific with priorities
+4. Reference specific rule files directly in your prompt
+
+#### Problem: Subdirectory `CLAUDE.md` not picked up
+
+**Solutions:**
+1. Claude Code loads `CLAUDE.md` from the working directory and parent directories
+2. Ensure you are working within the subdirectory scope
+3. Use relative paths from the `CLAUDE.md` location to the ai-rules directory
 
 ### General Issues
 
@@ -641,6 +859,7 @@ If you encounter issues:
 
 - [GitHub Copilot Documentation](https://docs.github.com/en/copilot)
 - [Cursor IDE Documentation](https://cursor.sh/docs)
+- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
 - [VS Code Settings Documentation](https://code.visualstudio.com/docs/getstarted/settings)
 - Repository Rule Files: `{language}/rules.yml`
 - Style Guides: `{language}/styleguide.md`

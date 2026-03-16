@@ -1,8 +1,8 @@
 # AI Coding Standards Repository
 
-Centralized AI coding standards and style guides with automated sync across GitHub Copilot, Cursor, and other AI-powered development tools for consistent code completions.
+Centralized AI coding standards and style guides with automated sync across GitHub Copilot, Cursor, Claude Code, and other AI-powered development tools for consistent code completions.
 
-**📚 [Setup Guide](SETUP.md)** - Step-by-step instructions for automatic integration with VS Code Copilot and Cursor IDE.
+**📚 [Setup Guide](SETUP.md)** - Step-by-step instructions for automatic integration with VS Code Copilot, Cursor IDE, and Claude Code.
 
 ## 📋 Overview
 
@@ -119,6 +119,16 @@ Cursor can load these rules to provide context-aware suggestions:
 
 **Quick Start:** See [Cursor IDE Setup](SETUP.md#cursor-ide-setup) for automatic integration steps.
 
+### Claude Code
+
+Claude Code uses `CLAUDE.md` files to load project-specific instructions:
+
+1. Create a `CLAUDE.md` file in your project root referencing these standards
+2. Claude Code automatically reads `CLAUDE.md` and follows the rules during coding sessions
+3. Use `/init` in Claude Code to auto-generate a starter `CLAUDE.md`
+
+**Quick Start:** See [Claude Code Setup](SETUP.md#claude-code-setup) for detailed integration steps.
+
 ### Other AI Tools
 
 The standardized format (`rules.yml` + `styleguide.md`) can be consumed by:
@@ -129,7 +139,7 @@ The standardized format (`rules.yml` + `styleguide.md`) can be consumed by:
 
 ## 📖 Using the Standards
 
-**→ New to setup? See [SETUP.md](SETUP.md) for automatic integration with VS Code Copilot and Cursor IDE.**
+**→ New to setup? See [SETUP.md](SETUP.md) for automatic integration with VS Code Copilot, Cursor IDE, and Claude Code.**
 
 ### For Developers
 
@@ -165,7 +175,7 @@ The `sync-config.json` file configures automatic syncing:
 ```json
 {
   "sync_enabled": true,
-  "tools": ["copilot", "cursor", "tabnine"],
+  "tools": ["copilot", "cursor", "claude-code", "tabnine"],
   "update_frequency": "daily"
 }
 ```
@@ -200,11 +210,8 @@ To add or update standards:
 ### AI Tool Documentation
 - [GitHub Copilot](https://github.com/features/copilot)
 - [Cursor IDE](https://cursor.sh/)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - [Tabnine](https://www.tabnine.com/)
-
-## 📄 License
-
-This repository is provided for use within your organization. Modify and adapt as needed for your specific requirements.
 
 ## 🔐 Security
 
